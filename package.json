@@ -1,0 +1,17 @@
+{
+  "name": "bdsx2discord",
+  "version": "0.0.1",
+  "description": "bdsx <-> discord chat Plugin",
+  "main": "index.js",
+  "keywords": [],
+  "author": "kaito02020424",
+  "bdsxPlugin": true,
+  "devDependencies": {
+    "@types/comment-json": "^2.4.2",
+    "bdsx": "file:../bdsx"
+  },
+  "dependencies": {
+    "comment-json": "~1.1.3",
+    "discord.js": "^11.6.4 <12.0.0"
+  }
+}

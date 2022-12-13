@@ -1,0 +1,8 @@
+{
+    "token":"yours token",
+    "send_channelID":"discord_channel_id",
+    "discord_command":{
+        "bool":true,
+        "prefix":"."
+    }
+}
