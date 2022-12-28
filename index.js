@@ -12,6 +12,7 @@ const bdsx_1 = require("bdsx");
 const command_1 = require("bdsx/bds/command");
 const command_2 = require("bdsx/command");
 const nativetype_1 = require("bdsx/nativetype");
+const { underline } = require("colors");
 const connectionList = new Map();
 let nowlist = [];
 var s;
@@ -39,6 +40,18 @@ client.on('message', message => {
             if (message.content.length > config.OP_command.prefix.length + 1) {
                 let res = launcher_1.bedrockServer.executeCommand(message.content.substr(config.OP_command.prefix.length + 1), cr.CommandResultType.Data);
                 console.log(`[BDSX-Discord]:${message.author.username} executed ${message.content.substr(config.OP_command.prefix.length + 1)}`);
+                if (res.data.statusMessage === null || res.data.statusMessage === undefined || !typeof res.data.statusMessage === "string"){
+                    message.channel.send({
+                        "embed": {
+                            "author": {
+                                "name": "Server"
+                            },
+                            "description": "(null)",
+                            "color": 0x00ff00
+                        }
+                    });
+                    return;
+                }
                 if (res.data.statusMessage.length > 4000) {
                     message.channel.send({
                         "embed": {
