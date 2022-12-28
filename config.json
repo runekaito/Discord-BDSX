@@ -1,8 +1,13 @@
 {
-    "token":"yours token",
-    "send_channelID":"discord_channel_id",
+    "token":"your token",
+    "send_channelID":"send channel id",
     "discord_command":{
         "bool":true,
         "prefix":"."
+    },
+    "OP_command":{
+        "bool":true,
+        "roleId":"OP role id",
+        "prefix":".eval"
     }
 }
