@@ -1,38 +1,92 @@
 const fs = require("fs");
 const path = require("path");
 const filepath = path.resolve(__dirname, './');
-const config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
 const discord = require('discord.js');
 const packetids_1 = require("bdsx/bds/packetids");
 const event_1 = require("bdsx/event");
 const launcher_1 = require("bdsx/launcher");
-const CommandResultType = require("bdsx/commandresult");
+const cr = require("bdsx/commandresult");
 const client = new discord.Client();
 const bdsx_1 = require("bdsx");
+const command_1 = require("bdsx/bds/command");
+const command_2 = require("bdsx/command");
+const nativetype_1 = require("bdsx/nativetype");
 const connectionList = new Map();
-let nowlist=[];
+let nowlist = [];
 var s;
 client.on('ready', () => {
     console.log('Discord bot Login!');
     s = true;
 });
 client.on('message', message => {
-    if (message.author.bot) return;
-
+    if (message.author.bot) return;//Bot無視
     if (message.channel.id === config.send_channelID) {
-        if (config.discord_command.bool && message.content==config.discord_command.prefix+"list"){
-            let c="";
-            for (const player of nowlist) {
-                c+=`${player}\n`;
+        //.evalコマンド
+        if (message.content.substr(0, config.OP_command.prefix.length + 1) === `${config.OP_command.prefix} `) {
+            if (!(message.member.roles.has(config.OP_command.roleId) && config.OP_command.bool)) {
+                message.channel.send({
+                    "embed": {
+                        "author": {
+                            "name": "Server"
+                        },
+                        "description": ".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
+                        "color": 0xff0000
+                    }
+                })
+                return;
             }
-            if(c.length==0){
+            if (message.content.length > config.OP_command.prefix.length + 1) {
+                let res = launcher_1.bedrockServer.executeCommand(message.content.substr(config.OP_command.prefix.length + 1), cr.CommandResultType.Data);
+                console.log(`[BDSX-Discord]:${message.author.username} executed ${message.content.substr(config.OP_command.prefix.length + 1)}`);
+                if (res.data.statusMessage.length > 4000) {
+                    message.channel.send({
+                        "embed": {
+                            "author": {
+                                "name": "Server"
+                            },
+                            "description": `${res.data.statusMessage.substr(0, 4000)}...`,
+                            "color": 0x00ff00
+                        }
+                    });
+                    return;
+                }
+                message.channel.send({
+                    "embed": {
+                        "author": {
+                            "name": "Server"
+                        },
+                        "description": res.data.statusMessage,
+                        "color": 0x00ff00
+                    }
+                });
+            } else {
+                message.channel.send({
+                    "embed": {
+                        "author": {
+                            "name": "Server"
+                        },
+                        "description": "引数エラー:実行するコマンドを指定してください。",
+                        "color": 0xff0000
+                    }
+                });
+            }
+            return;
+        }
+        //.listコマンド
+        if (config.discord_command.bool && message.content == config.discord_command.prefix + "list") {
+            let c = "";
+            for (const player of nowlist) {
+                c += `${player}\n`;
+            }
+            if (c.length == 0) {
                 client.channels.get(config.send_channelID).send({
                     "embed": {
                         "author": {
-                            "name":"Server"
+                            "name": "Server"
                         },
                         "description": "No people",
-                        "color":0x0000ff
+                        "color": 0x0000ff
                     }
                 });
                 return;
@@ -40,25 +94,38 @@ client.on('message', message => {
             client.channels.get(config.send_channelID).send({
                 "embed": {
                     "author": {
-                        "name":"Server"
+                        "name": "Server"
                     },
                     "description": c,
-                    "color":0x0000ff
+                    "color": 0x0000ff
                 }
             });
             return;
         }
-        launcher_1.bedrockServer.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username}] ${message.content}"}]}`, CommandResultType.Mute);
+        //コマンドじゃない場合、チャット送信
+        launcher_1.bedrockServer.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username}] ${message.content}"}]}`, cr.CommandResultType.Mute);
     }
 });
 event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
+    if (ev.message.length > 4000) {
+        client.channels.get(config.send_channelID).send({
+            "embed": {
+                "author": {
+                    "name": ev.name
+                },
+                "description": `${ev.message.substr(0, 4000)}...`,
+                "color": 0x0000ff
+            }
+        });
+        return;
+    }
     client.channels.get(config.send_channelID).send({
         "embed": {
             "author": {
-                "name":ev.name
+                "name": ev.name
             },
             "description": ev.message,
-            "color":0x0000ff
+            "color": 0x0000ff
         }
     });
 });
@@ -69,8 +136,8 @@ client.on('error', (error) => {
     }
 });
 client.on('resume', (num) => {
-    if (!s){
-        console.log("\x1b[32mWebsocket restart!\x1b[0m");
+    if (!s) {
+        console.log("\x1b[32mWebsocket resumed.\x1b[0m");
         s = true;
     }
 });
@@ -78,7 +145,7 @@ event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIden
     const connreq = ptr.connreq;
     const cert = connreq.cert;
     const username = cert.getId();
-    if (username){
+    if (username) {
         connectionList.set(networkIdentifier, username);
         nowlist.push(username);
     }
@@ -89,7 +156,7 @@ event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIden
                     "name": username
                 },
                 "description": `${username} has joined the server!`,
-                "color":0x00ff00
+                "color": 0x00ff00
             }
         });
 });
@@ -98,15 +165,37 @@ event_1.events.networkDisconnected.on(networkIdentifier => {
     connectionList.delete(networkIdentifier);
 
     const index = nowlist.indexOf(id);
-    nowlist.splice(index,1);
+    nowlist.splice(index, 1);
     client.channels.get(config.send_channelID).send({
         "embed": {
             "author": {
                 "name": id
             },
             "description": `${id} has left the server!`,
-            "color":0xff0000
+            "color": 0xff0000
         }
     });
+});
+
+launcher_1.bedrockServer.afterOpen().then(() => {
+    command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator).overload(
+        (param, origin, output) => {
+            if (param.mode === "reload"){
+                try{
+                    config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+                }catch(e){
+                    output.error("reload error...");
+                    return;
+                }
+                output.success("reload success!");
+                return;
+            }else{
+                output.error("Bad argument.");
+            }
+        },
+        {
+            mode:nativetype_1.CxxString
+        },
+    );
 });
 client.login(config.token);
