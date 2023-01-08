@@ -110,7 +110,7 @@ myChild.on('message', (message) => {
         for (const player of server_1.serverInstance.getPlayers()) {
             m.push(player.getNameTag());
         }
-        process.send(["list",m]);
+        myChild.send(["list",m]);
     }else if(message[0] === "log"){
         console.log(message[1]);
     }
