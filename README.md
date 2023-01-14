@@ -56,7 +56,7 @@ You can execute the command by sending ".eval execute command".
 > **Warning**  
 Please specify the role carefully, as ".eval stop" etc. can also be executed without throwing an error, and is a very dangerous privilege.
 
-- .list
+- .list  
 Even unauthorized persons can, by default, obtain a list of persons currently logged in to the server by executing ".list".
 
 ---
