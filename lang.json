@@ -1,0 +1,12 @@
+{
+    "ja":{
+        "eval_err":".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
+        "arg_err":"引数エラー:実行するコマンドを指定してください。",
+        "memo":"今後追加予定..."
+    },
+    "en":{
+        "eval_err":"You do not have permission to use the .eval command or the function is not enabled.",
+        "arg_err":"Argument error: Specify command to execute.",
+        "memo":"More to be added in the future..."
+    }
+}
