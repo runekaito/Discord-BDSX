@@ -12,13 +12,22 @@ config.jsonを編集し、ボットトークンと送受信するチャンネル
 BDSX及びこのプラグインを実行するサーバーマシンに、Node.js v16.9.0以上がインストールされているかつ、PATHが通っている(コマンドプロンプトなどでnode -vを実行すると反応する)必要があります。この制限は、内部でDiscord.js v14.7.1を使用しているためです。  
   
 #### コマンド  
+##### マインクラフトにおけるOPコマンド:  
 /dbchat がメインコマンドです。  
   
 引数説明  
 ・reload  
 config.jsonの設定を再読み込みします。  
 
-今後設定は追加予定
+##### Discordの指定のチャンネルにおけるコマンド実行:  
+- .eval  
+先述の、OPロールIDを持っている人は、Discordにおいて、デフォルトでは  
+「.eval 実行コマンド」を送信することでコマンドを実行できます。
+> **Warning**  
+「.eval stop」などもエラーを吐かずに実行でき、非常に危険な権限であるため慎重にロールを指定してください。  
+
+- .list  
+一般の権限のない人物でも、デフォルトでは「.list」を実行することで現在サーバーにログインしている人物一覧を取得できます。
 
 ---
 ### English
@@ -32,14 +41,24 @@ Edit config.json and write the bot token, the channel ID to send/receive, and th
 > **Note**   
 BDSX and the server machine running this plugin must have Node.js v16.9.0 or higher installed and PATHed (node -v at the command prompt will respond). This limitation is due to the internal use of Discord.js v14.7.1.  
   
-#### Commands  
+#### Commands 
+##### OP Commands in Minecraft:
 /dbchat is the main command.  
   
 Argument Description  
 ・reload  
 Reloads the configuration in config.json.  
 
-More configurations will be added in the future.
+##### Execution of a command on a specified channel of Discord: 
+- .eval  
+The aforementioned, those who have an OP role ID can, by default, in Discord, execute commands by sending  
+You can execute the command by sending ".eval execute command".
+> **Warning**  
+Please specify the role carefully, as ".eval stop" etc. can also be executed without throwing an error, and is a very dangerous privilege.
 
+- .list
+Even unauthorized persons can, by default, obtain a list of persons currently logged in to the server by executing ".list".
+
+---
 > **Warning**  
 Kaito02020424, who wrote the README, is Japanese, and the translation is based on DeepL translation, so there may be inaccuracies. Please be aware of this.
