@@ -6,7 +6,7 @@ git cloneして、フォルダ全体をbdsxルートフォルダ直下のplugins
 bdsx/plugins/Discord-BDSX/ファイルごちゃごちゃ  
 となるように  
   
-config.jsonを編集し、ボットトークンと送受信するチャンネルIDを書き込んでください。  
+config.jsonを編集し、ボットトークンと送受信するチャンネルID、使用する言語(おそらく"ja")を書き込んでください。  
     
 > **Note**  
 BDSX及びこのプラグインを実行するサーバーマシンに、Node.js v16.9.0以上がインストールされているかつ、PATHが通っている(コマンドプロンプトなどでnode -vを実行すると反応する)必要があります。この制限は、内部でDiscord.js v14.7.1を使用しているためです。  
@@ -27,7 +27,7 @@ Please git clone and put the whole folder into the plugins folder directly under
 bdsx/plugins/Discord-BDSX/files (e.g. index.js, etc.)
 so that  
   
-Edit config.json and write the bot token and the channel ID to send/receive.  
+Edit config.json and write the bot token, the channel ID to send/receive, and the language to use (probably "en").  
   
 > **Note**   
 BDSX and the server machine running this plugin must have Node.js v16.9.0 or higher installed and PATHed (node -v at the command prompt will respond). This limitation is due to the internal use of Discord.js v14.7.1.  
