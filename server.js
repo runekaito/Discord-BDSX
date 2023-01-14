@@ -2,7 +2,26 @@ const fs = require("fs");
 const path = require("path");
 const filepath = path.resolve(__dirname, './');
 let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+let country;
+if (config.lang === undefined || !(config.lang in {"ja":null,"en":null})){
+    country="ja";
+}else{
+    country=config.lang;
+}
+let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
+
+//reload function
+function reload(){
+    config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+    if (config.lang === undefined || !(config.lang in {"ja":null,"en":null})){
+        country="ja";
+    }else{
+        country=config.lang;
+    }
+    lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
+}
+
+const { Client, GatewayIntentBits, EmbedBuilder, underscore } = require('discord.js');
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]
 });
@@ -20,18 +39,18 @@ client.on('messageCreate', message => {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
-                    .setDescription(".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。")
+                    .setDescription(lang.eval_err)
                 message.channel.send({ embeds: [embed] })
                 return;
             }
             if (message.content.length > config.OP_command.prefix.length + 1) {
                 process.send(["command", message.content.substr(config.OP_command.prefix.length + 1), "data"]);
-                process.send(["log", `[BDSX-Discord]:${message.author.username} executed ${message.content.substr(config.OP_command.prefix.length + 1)}`]);
+                process.send(["log", `[BDSX-Discord]${message.author.username} executed: ${message.content.substr(config.OP_command.prefix.length + 1)}`]);
             } else {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
-                    .setDescription("引数エラー:実行するコマンドを指定してください。")
+                    .setDescription(lang.arg_err)
                 message.channel.send({ embeds: [embed] });
             }
             return;
@@ -48,7 +67,7 @@ client.on('messageCreate', message => {
 });
 
 client.on('error', (error) => {
-    if (s) {  //error spam prevention
+    if (s) {  //errログスパム防止
         process.send(["log", "\x1b[31mWebsocket error!\x1b[0m"]);
         s = false;
     }
@@ -117,7 +136,7 @@ process.on('message', (message) => {
             .setDescription(c)
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "reload") {
-        config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+        reload()
 
     }
 });
