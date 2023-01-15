@@ -9,6 +9,8 @@ if (config.lang === undefined || !(config.lang in {"ja":null,"en":null})){
     country=config.lang;
 }
 let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
+let info = {"version":JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).version,"author":JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).author}
+
 
 //reload function
 function reload(){
@@ -58,6 +60,22 @@ client.on('messageCreate', message => {
         //.listコマンド
         if (config.discord_command.bool && message.content == config.discord_command.prefix + "list") {
             process.send(["list"])
+            return;
+        //.pingコマンド
+        }else if (config.discord_command.bool && message.content == config.discord_command.prefix + "ping"){
+            const embed = new EmbedBuilder()
+                .setAuthor({ "name": "Server" })
+                .setColor(0x00ff00)
+                .setDescription("**Pong!**")
+            message.channel.send({ embeds: [embed] });
+            return;
+        //.infoコマンド
+        }else if (config.discord_command.bool && message.content == config.discord_command.prefix + "info"){
+            const embed = new EmbedBuilder()
+                .setAuthor({ "name": "Plugin Info" })
+                .setColor(0x00ff00)
+                .setDescription(`${lang.info[0]}${info.author}\n${lang.info[1]}${info.version}`)
+            message.channel.send({ embeds: [embed] });
             return;
         }
         //コマンドじゃない場合、チャット送信
