@@ -29,6 +29,12 @@ config.jsonの設定を再読み込みします。
 - .list  
 一般の権限のない人物でも、デフォルトでは「.list」を実行することで現在サーバーにログインしている人物一覧を取得できます。
 
+- .ping  
+サーバーがオンラインかどうかを確かめます。  
+
+- .info  
+プラグインのバージョン及び開発者の名前を表示します。  
+
 ---
 ### English
 This is a plugin to connect Discord and BDSX.  
@@ -58,6 +64,12 @@ Please specify the role carefully, as ".eval stop" etc. can also be executed wit
 
 - .list  
 Even unauthorized persons can, by default, obtain a list of persons currently logged in to the server by executing ".list".
+
+- .ping  
+Verify if the server is online.  
+
+- .info  
+Displays the version of the plug-in and the name of the developer.  
 
 ---
 > **Warning**  
