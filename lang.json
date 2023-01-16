@@ -1,16 +1,24 @@
 {
-    "version":"1.0.0",
+    "version":"1.1.0",
     "author":"kaito02020424",
     "ja":{
         "eval_err":".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
         "arg_err":"引数エラー:実行するコマンドを指定してください。",
         "info":["作成者:","バージョン:"],
+        "open":"サーバーが起動しました。",
+        "join":"がサーバーにログインしました。",
+        "leave":"がサーバーからログアウトしました。",
+        "no_player":"プレイヤーはいません。",
         "__memo":"今後追加予定..."
     },
     "en":{
         "eval_err":"You do not have permission to use the .eval command or the function is not enabled.",
         "arg_err":"Argument error: Specify command to execute.",
         "info":["Author:","Version:"],
+        "open":"Server is up and running.",
+        "join":" has joined the server!",
+        "leave":" has left the server!",
+        "no_player":"No players.",
         "__memo":"More to be added in the future..."
     }
 }

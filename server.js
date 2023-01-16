@@ -3,22 +3,22 @@ const path = require("path");
 const filepath = path.resolve(__dirname, './');
 let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
 let country;
-if (config.lang === undefined || !(config.lang in {"ja":null,"en":null})){
-    country="ja";
-}else{
-    country=config.lang;
+if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
+    country = "ja";
+} else {
+    country = config.lang;
 }
 let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
-let info = {"version":JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).version,"author":JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).author}
+let info = { "version": JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).version, "author": JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).author }
 
 
 //reload function
-function reload(){
+function reload() {
     config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
-    if (config.lang === undefined || !(config.lang in {"ja":null,"en":null})){
-        country="ja";
-    }else{
-        country=config.lang;
+    if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
+        country = "ja";
+    } else {
+        country = config.lang;
     }
     lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
 }
@@ -30,6 +30,11 @@ const client = new Client({
 var s;
 client.on('ready', () => {
     process.send(["log", 'Discord bot Login!']);
+    const embed = new EmbedBuilder()
+        .setAuthor({ "name": "Server" })
+        .setColor(0x00ff00)
+        .setDescription(lang.open)
+    client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     s = true;
 });
 client.on('messageCreate', message => {
@@ -61,16 +66,16 @@ client.on('messageCreate', message => {
         if (config.discord_command.bool && message.content == config.discord_command.prefix + "list") {
             process.send(["list"])
             return;
-        //.pingコマンド
-        }else if (config.discord_command.bool && message.content == config.discord_command.prefix + "ping"){
+            //.pingコマンド
+        } else if (config.discord_command.bool && message.content == config.discord_command.prefix + "ping") {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x00ff00)
                 .setDescription("**Pong!**")
             message.channel.send({ embeds: [embed] });
             return;
-        //.infoコマンド
-        }else if (config.discord_command.bool && message.content == config.discord_command.prefix + "info"){
+            //.infoコマンド
+        } else if (config.discord_command.bool && message.content == config.discord_command.prefix + "info") {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Plugin Info" })
                 .setColor(0x00ff00)
@@ -79,7 +84,7 @@ client.on('messageCreate', message => {
             return;
         }
         //コマンドじゃない場合、チャット送信
-        process.send(["command", `tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username}] ${message.content}"}]}`, "mute"]);
+        process.send(["command", `tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}] ${message.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"}]}`, "mute"]);
     } else {
     }
 });
@@ -144,7 +149,7 @@ process.on('message', (message) => {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x0000ff)
-                .setDescription("No people")
+                .setDescription(lang.no_player)
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
