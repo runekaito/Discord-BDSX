@@ -21,8 +21,8 @@ Prerequisite :
 - If you start Discord-BDSX in a Wine environment, you will get an error and Discord-BDSX will not start.
 - Bash commands are basic (~/ notation, cd and ls, environment variables, etc.)
 
-If you have not played with the Wine configuration, download the Windows binary from the official Node.js site directly under ~/.wine/dosdevices/c:/windows/system32 and extract Node.exe.
-(Note that Node.js must be v16.9.0 or higher.)
+If you have not played with Wine settings, download the Windows binary from the official Node.js website and extract Node.exe. (Note that Node.js must be v16.9.0 or higher.)
+Place the Node.exe directly under ~/.wine/dosdevices/c:/windows/system32.
 
 Then, assign 1 to the NODE_SKIP_PLATFORM_CHECK environment variable in a Linux terminal and run bdsx.sh, and it should probably work perfectly.
 > Advanced Notes :
