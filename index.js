@@ -14,6 +14,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const fs = require("fs");
     const path = require("path");
     const filepath = path.resolve(__dirname, './');
+    let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
     const myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
     const connectionList = new Map();
@@ -37,6 +38,9 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     }
 
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
+        if (ev.name in blacklist) {
+            return;
+        }
         if (ev.message.length > 4000) {
             myChild.send(["message", {
                 "embed": {
@@ -97,8 +101,8 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         }]);
     });
-
-    command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator).overload(
+    const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
+    dbchat.overload(
         (param, origin, output) => {
             if (param.mode === "reload") {
                 reload();
@@ -110,8 +114,71 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         },
         {
-            mode: nativetype_1.CxxString
+            mode: command_2.command.enum("reload", { reload: "reload" })
         },
+    );
+    dbchat.overload(
+        (param, origin, output) => {
+            if (param.mode === "blacklist") {
+                for (const player of server_1.serverInstance.getPlayers()) {
+                    if (player.getNameTag() === param.username.getName()) {
+                        if (player.getNameTag() in blacklist) {
+                            output.error("It has already been registered.");
+                        } else {
+                            blacklist[player.getNameTag()] = true;
+                            fs.writeFileSync(`${filepath}/database/blacklist.json`, JSON.stringify(blacklist, null, 4));
+                            output.success("success!");
+                        }
+                        return;
+                    }
+                }
+                output.error("User not found.");
+            } else {
+                output.error("Bad argument.");
+            }
+        }, {
+        mode: command_2.command.enum("blacklist", { blacklist: "blacklist" }),
+        motion: command_2.command.enum("add-list", { add: "add" }),
+        username: command_1.ActorCommandSelector
+    }
+    );
+    dbchat.overload(
+        (param, origin, output) => {
+            if (param.mode === "blacklist") {
+                if (param.username.getName() in blacklist) {
+                    delete blacklist[param.username.getName()];
+                    fs.writeFileSync(`${filepath}/database/blacklist.json`, JSON.stringify(blacklist, null, 4));
+                    output.success("success!");
+                } else {
+                    output.error("User is not blacklisted.");
+                }
+                return;
+            } else {
+                output.error("Bad argument.");
+            }
+        }, {
+        mode: command_2.command.enum("blacklist", { blacklist: "blacklist" }),
+        motion: command_2.command.enum("remove", { remove: "remove" }),
+        username: command_1.ActorCommandSelector
+    }
+    );
+    dbchat.overload(
+        (param, origin, output) => {
+            if (param.mode === "blacklist") {
+                let m = "Blacklisted users:\n";
+                let c = 0;
+                for (const t in blacklist) {
+                    c++;
+                    m += `${c}. ${t}\n`;
+                }
+                output.success(m);
+            } else {
+                output.error("Bad argument.");
+            }
+        }, {
+        mode: command_2.command.enum("blacklist", { blacklist: "blacklist" }),
+        motion: command_2.command.enum("list", { list: "list" })
+    }
     );
 
     myChild.on('message', (message) => {
