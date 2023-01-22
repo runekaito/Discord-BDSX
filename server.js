@@ -50,7 +50,7 @@ client.on('messageCreate', message => {
             }
             if (message.content.length > config.OP_command.prefix.length + 1) {
                 process.send(["command", message.content.substr(config.OP_command.prefix.length + 1), "data"]);
-                process.send(["log", `[BDSX-Discord]${message.author.username} executed: ${message.content.substr(config.OP_command.prefix.length + 1)}`]);
+                process.send(["log", `[Discord-BDSX]${message.author.username} executed: ${message.content.substr(config.OP_command.prefix.length + 1)}`]);
             } else {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
