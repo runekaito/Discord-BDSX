@@ -7,8 +7,7 @@
     },
     "OP_command":{
         "bool":true,
-        "roleId":"OP role id",
-        "prefix":".eval"
+        "roleId":"OP role id"
     },
     "lang":"ja"
 }

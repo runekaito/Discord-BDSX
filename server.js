@@ -39,7 +39,7 @@ client.on('messageCreate', message => {
     if (message.author.bot) return;//Bot無視
     if (message.channel.id === config.send_channelID) {
         //.evalコマンド
-        if (message.content.substr(0, config.OP_command.prefix.length + 1) === `${config.OP_command.prefix} `) {
+        if (message.content.substr(0, `${config.discord_command.prefix}eval`.length + 1) === `${config.discord_command.prefix}eval `) {
             if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -48,9 +48,9 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] })
                 return;
             }
-            if (message.content.length > config.OP_command.prefix.length + 1) {
-                process.send(["command", message.content.substr(config.OP_command.prefix.length + 1), "data"]);
-                process.send(["log", `[Discord-BDSX]${message.author.username} executed: ${message.content.substr(config.OP_command.prefix.length + 1)}`]);
+            if (message.content.length > `${config.discord_command.prefix}eval`.length + 1) {
+                process.send(["command", message.content.substr(`${config.discord_command.prefix}eval`.length + 1), "data"]);
+                process.send(["log", `[Discord-BDSX]${message.author.username} executed: ${message.content.substr(`${config.discord_command.prefix}eval`.length + 1)}`]);
             } else {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
