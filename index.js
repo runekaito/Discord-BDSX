@@ -36,7 +36,12 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         }
         lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
     }
-
+    process.on('unhandledRejection', error => {
+        console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
+    });
+    process.on('uncaughtException', (err) => {
+        console.log('[Discord-BDSX]:ERROR!\nError Log:\n', err);
+    });
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
         if (ev.name in blacklist) {
             return;
