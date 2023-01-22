@@ -27,7 +27,6 @@ const { Client, GatewayIntentBits, EmbedBuilder, underscore } = require('discord
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]
 });
-var s;
 client.on('ready', () => {
     process.send(["log", 'Discord bot Login!']);
     const embed = new EmbedBuilder()
@@ -35,7 +34,6 @@ client.on('ready', () => {
         .setColor(0x00ff00)
         .setDescription(lang.open)
     client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
-    s = true;
 });
 client.on('messageCreate', message => {
     if (message.author.bot) return;//Bot無視
@@ -88,18 +86,9 @@ client.on('messageCreate', message => {
     } else {
     }
 });
-
-client.on('error', (error) => {
-    if (s) {  //errログスパム防止
-        process.send(["log", "\x1b[31mWebsocket error!\x1b[0m"]);
-        s = false;
-    }
-});
-client.on('resume', (num) => {
-    if (!s) {
-        process.send(["log", "\x1b[32mWebsocket resumed.\x1b[0m"]);
-        s = true;
-    }
+;
+process.on('unhandledRejection', error => {
+    console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
 process.on('message', (message) => {
     if (message[0] === "message") {
