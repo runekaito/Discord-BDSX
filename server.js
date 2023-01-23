@@ -8,7 +8,6 @@ if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
 } else {
     country = config.lang;
 }
-path="a";//error
 let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
 let info = { "version": JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).version, "author": JSON.parse(fs.readFileSync(`${filepath}/lang.json`)).author }
 
