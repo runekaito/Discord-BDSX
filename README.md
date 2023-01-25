@@ -26,8 +26,13 @@ config.jsonの設定を再読み込みします。
 > **Warning**  
 「.eval stop」などもエラーを吐かずに実行でき、非常に危険な権限であるため慎重にロールを指定してください。  
 
+- .userinfo  
+先述の、OPロールIDを持っている人は、Discordにおいて、デフォルトでは  
+「.userinfo ユーザー名」を送信することで過去にログインしたことのあるプレイヤーの情報(XUID及びデバイスの種類)を取得できます。  
+また、プライバシーを考慮し、IPアドレスに関しては、./database/userinfo.jsonを直接覗くことでのみ取得できます。  
+
 - .list  
-一般の権限のない人物でも、デフォルトでは「.list」を実行することで現在サーバーにログインしている人物一覧を取得できます。
+一般の権限のない人物でも、デフォルトでは「.list」を実行することで現在サーバーにログインしている人物一覧を取得できます。  
 
 - .ping  
 サーバーがオンラインかどうかを確かめます。  
@@ -60,10 +65,14 @@ Reloads the configuration in config.json.
 The aforementioned, those who have an OP role ID can, by default, in Discord, execute commands by sending  
 You can execute the command by sending ".eval execute command".
 > **Warning**  
-Please specify the role carefully, as ".eval stop" etc. can also be executed without throwing an error, and is a very dangerous privilege.
+Please specify the role carefully, as ".eval stop" etc. can also be executed without throwing an error, and is a very dangerous privilege.  
+
+- .userinfo  
+If you have an OP role ID, as mentioned above, you can retrieve information (XUID and device type) about players who have logged in in the past by sending ".userinfo username" by default in Discord.  
+In addition, for privacy reasons, for IP addresses, we will use . /database/userinfo.json directly.  
 
 - .list  
-Even unauthorized persons can, by default, obtain a list of persons currently logged in to the server by executing ".list".
+Even unauthorized persons can, by default, obtain a list of persons currently logged in to the server by executing ".list".  
 
 - .ping  
 Verify if the server is online.  
@@ -73,4 +82,4 @@ Displays the version of the plug-in and the name of the developer.
 
 ---
 > **Warning**  
-Kaito02020424, who wrote the README, is Japanese, and the translation is based on DeepL translation, so there may be inaccuracies. Please be aware of this.
+Kaito02020424, who wrote the README, is Japanese, and the translation is based on DeepL translation, so there may be inaccuracies. Please be aware of this.  
