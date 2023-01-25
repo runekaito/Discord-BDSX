@@ -1,5 +1,5 @@
 {
-    "version":"1.2.0",
+    "version":"1.3.1",
     "author":"kaito02020424",
     "ja":{
         "eval_err":".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
@@ -9,6 +9,9 @@
         "join":"がサーバーにログインしました。",
         "leave":"がサーバーからログアウトしました。",
         "no_player":"プレイヤーはいません。",
+        "userinfo_per_err":".userinfoコマンドを使用する権限がない、もしくは機能が有効になっていません。",
+        "userinfo_arg_err":"引数エラー:検索するユーザーを指定してください。",
+        "userinfo_not_found":"ユーザーが見つかりません。",
         "__memo":"今後追加予定..."
     },
     "en":{
@@ -19,6 +22,9 @@
         "join":" has joined the server!",
         "leave":" has left the server!",
         "no_player":"No players.",
+        "userinfo_per_err":"You do not have permission to use the .userinfo command or the function is not enabled.",
+        "userinfo_arg_err":"Argument error: Specify user to search.",
+        "userinfo_not_found":"User not found.",
         "__memo":"More to be added in the future..."
     }
 }

@@ -59,6 +59,40 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] });
             }
             return;
+        }else if (message.content.substr(0, `${config.discord_command.prefix}userinfo`.length + 1) === `${config.discord_command.prefix}userinfo `){
+            //.userinfoコマンド
+            const userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
+            if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_per_err)
+                message.channel.send({ embeds: [embed] })
+                return;
+            }
+            if (message.content.length <= `${config.discord_command.prefix}userinfo`.length + 1) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_arg_err)
+                message.channel.send({ embeds: [embed] });
+                return;
+            }
+            if (message.content.substr(`${config.discord_command.prefix}userinfo`.length + 1) in userinfo){
+                const username = message.content.substr(`${config.discord_command.prefix}userinfo`.length + 1);
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "User Info" })
+                    .setColor(0x0000ff)
+                    .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceType**:\n${userinfo[username]["device"]}`)
+                message.channel.send({ embeds: [embed] });
+            } else {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_not_found)
+                message.channel.send({ embeds: [embed] });
+            }
+            return;
         }
         //.listコマンド
         if (config.discord_command.bool && message.content == config.discord_command.prefix + "list") {

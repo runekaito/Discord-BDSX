@@ -1,4 +1,4 @@
-const launcher_1 = require("bdsx/launcher");;
+const launcher_1 = require("bdsx/launcher");
 launcher_1.bedrockServer.afterOpen().then(() => {
     const packetids_1 = require("bdsx/bds/packetids");
     const event_1 = require("bdsx/event");
@@ -6,15 +6,16 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const server_1 = require("bdsx/bds/server");
     const command_1 = require("bdsx/bds/command");
     const command_2 = require("bdsx/command");
-    const nativetype_1 = require("bdsx/nativetype");
+    const common_1 = require("bdsx/common");
     const cr = require("bdsx/commandresult");
     const childProcess = require('child_process');
-    const which = require("which")
-    const resolved = which.sync('node')
+    const which = require("which");
+    const resolved = which.sync('node');
     const fs = require("fs");
     const path = require("path");
     const filepath = path.resolve(__dirname, './');
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
+    let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
     let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
     const myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
     const connectionList = new Map();
@@ -42,6 +43,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     process.on('uncaughtException', (err) => {
         console.log('[Discord-BDSX]:ERROR!\nError Log:\n', err);
     });
+    event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.SubClientLogin)
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
         if (ev.name in blacklist) {
             return;
@@ -71,7 +73,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
 
     event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIdentifier, packetId) => {
         const connreq = ptr.connreq;
-        const cert = connreq.cert;
+        const cert = connreq.getCertificate();
+        if (connreq === null)
+            return; // wrong client
+        if (cert === null)
+            return; // wrong client ?
         const username = cert.getId();
         if (username) {
             connectionList.set(networkIdentifier, username);
@@ -89,6 +95,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         "color": 0x00ff00
                     }
                 }]);
+        if (!(username === undefined || username === "undefined")){
+            userinfo[username]={"ip":networkIdentifier.getAddress(),"xuid":cert.getXuid(),"device":common_1.BuildPlatform[connreq.getDeviceOS()] || 'UNKNOWN'}
+            fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
+        }
     });
     event_1.events.networkDisconnected.on(networkIdentifier => {
         const id = connectionList.get(networkIdentifier);
