@@ -12,33 +12,33 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const fs = require("fs");
     const path = require("path");
     const filepath = path.resolve(__dirname, './');
-    const resolved = path.resolve(__dirname,"./bin/node.exe");
+    const resolved = path.resolve(__dirname, "./bin/node.exe");
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
     let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     let myChild;
-    node_dl.download("https://nodejs.org/dist/v18.13.0/win-x64/node.exe",resolved)
-    .then(() => {
-        process.env.NODE_SKIP_PLATFORM_CHECK = 1;
-        myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
-        myChild.on('message', (message) => {
-            if (message[0] === "command") {
-                let res = launcher_1.bedrockServer.executeCommand(message[1], cr.CommandResultType.Data);
-                if (!(message[2] === "mute")) {
-                    myChild.send(["res", res.data])
+    node_dl.download("https://nodejs.org/dist/v18.13.0/win-x64/node.exe", resolved)
+        .then(() => {
+            process.env.NODE_SKIP_PLATFORM_CHECK = 1;
+            myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
+            myChild.on('message', (message) => {
+                if (message[0] === "command") {
+                    let res = launcher_1.bedrockServer.executeCommand(message[1], cr.CommandResultType.Data);
+                    if (!(message[2] === "mute")) {
+                        myChild.send(["res", res.data])
+                    }
+                } else if (message[0] === "list") {
+                    let m = [];
+                    for (const player of server_1.serverInstance.getPlayers()) {
+                        m.push(player.getNameTag());
+                    }
+                    myChild.send(["list", m, `${server_1.serverInstance.getPlayers.length}/${server_1.serverInstance.getMaxPlayers()}`]);
+                } else if (message[0] === "log") {
+                    console.log(message[1]);
                 }
-            } else if (message[0] === "list") {
-                let m = [];
-                for (const player of server_1.serverInstance.getPlayers()) {
-                    m.push(player.getNameTag());
-                }
-                myChild.send(["list", m]);
-            } else if (message[0] === "log") {
-                console.log(message[1]);
-            }
-        });
-    })
+            });
+        })
     const connectionList = new Map();
     let nowlist = [];
     let country;
@@ -94,8 +94,8 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.playerJoin.on((ev) => {
         const player = ev.player;
         const username = player.getNameTag();
-        if (!(username === undefined || username === "undefined")){
-            userinfo[username]={"ip":player.getNetworkIdentifier().getAddress(),"xuid":player.getXuid(),"device":player.deviceId}
+        if (!(username === undefined || username === "undefined")) {
+            userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "device": player.deviceId }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
     })

@@ -176,6 +176,7 @@ process.on('message', (message) => {
                 .setAuthor({ "name": "Server" })
                 .setColor(0x0000ff)
                 .setDescription(lang.no_player)
+                .setFooter({text:message[2]})
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
@@ -183,6 +184,7 @@ process.on('message', (message) => {
             .setAuthor({ "name": "Server" })
             .setColor(0x0000ff)
             .setDescription(c)
+            .setFooter({text:message[2]})
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "reload") {
         reload()
