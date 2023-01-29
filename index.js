@@ -33,7 +33,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     for (const player of server_1.serverInstance.getPlayers()) {
                         m.push(player.getNameTag());
                     }
-                    myChild.send(["list", m, `${server_1.serverInstance.getPlayers.length}/${server_1.serverInstance.getMaxPlayers()}`]);
+                    myChild.send(["list", m, `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}`]);
                 } else if (message[0] === "log") {
                     console.log(message[1]);
                 }
