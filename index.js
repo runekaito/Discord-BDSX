@@ -91,7 +91,14 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         }]);
     });
-
+    event_1.events.playerJoin.on((ev) => {
+        const player = ev.player;
+        const username = player.getNameTag();
+        if (!(username === undefined || username === "undefined")){
+            userinfo[username]={"ip":player.getNetworkIdentifier().getAddress(),"xuid":player.getXuid(),"device":player.deviceId}
+            fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
+        }
+    })
     event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIdentifier, packetId) => {
         const connreq = ptr.connreq;
         const cert = connreq.getCertificate();
@@ -116,10 +123,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         "color": 0x00ff00
                     }
                 }]);
-        if (!(username === undefined || username === "undefined")){
-            userinfo[username]={"ip":networkIdentifier.getAddress(),"xuid":cert.getXuid(),"device":common_1.BuildPlatform[connreq.getDeviceOS()] || 'UNKNOWN'}
-            fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
-        }
     });
     event_1.events.networkDisconnected.on(networkIdentifier => {
         const id = connectionList.get(networkIdentifier);
