@@ -1,5 +1,7 @@
+//BDSXの起動を待つ
 const launcher_1 = require("bdsx/launcher");
 launcher_1.bedrockServer.afterOpen().then(() => {
+    //BDSX系のimport
     const packetids_1 = require("bdsx/bds/packetids");
     const event_1 = require("bdsx/event");
     const bdsx_1 = require("bdsx");
@@ -8,7 +10,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const command_2 = require("bdsx/command");
     const common_1 = require("bdsx/common");
     const cr = require("bdsx/commandresult");
+
+    //Discord Bot用のimport
     const childProcess = require('child_process');
+
+    //ファイル群読み込み
     const fs = require("fs");
     const path = require("path");
     const filepath = path.resolve(__dirname, './');
@@ -17,29 +23,34 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
     let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
     const node_dl = require(`${filepath}/modules/node-dl.js`);
+
+    //Node.exeをダウンロードしBotを起動する
     let myChild;
     node_dl.download("https://nodejs.org/dist/v18.13.0/win-x64/node.exe", resolved)
         .then(() => {
             process.env.NODE_SKIP_PLATFORM_CHECK = 1;
             myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
+            //server.jsからのイベント通知受信
             myChild.on('message', (message) => {
+                //コマンドを実行する
                 if (message[0] === "command") {
                     let res = launcher_1.bedrockServer.executeCommand(message[1], cr.CommandResultType.Data);
                     if (!(message[2] === "mute")) {
                         myChild.send(["res", res.data])
                     }
                 } else if (message[0] === "list") {
+                    //listを送る
                     let m = [];
                     for (const player of server_1.serverInstance.getPlayers()) {
                         m.push(player.getNameTag());
                     }
                     myChild.send(["list", m, `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}`]);
                 } else if (message[0] === "log") {
+                    //標準出力が異なる場合の画面表示
                     console.log(message[1]);
                 }
             });
         })
-    const connectionList = new Map();
     let nowlist = [];
     let country;
     if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
@@ -58,13 +69,14 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         }
         lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
     }
+    //未処理のエラーのキャッチ
     process.on('unhandledRejection', error => {
         console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
     });
     process.on('uncaughtException', (err) => {
         console.log('[Discord-BDSX]:ERROR!\nError Log:\n', err);
     });
-    event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.SubClientLogin)
+    //チャット受信
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
         if (ev.name in blacklist) {
             return;
@@ -91,45 +103,35 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         }]);
     });
+    //JOINイベント
     event_1.events.playerJoin.on((ev) => {
         const player = ev.player;
         const username = player.getNameTag();
+        //変なログインを検知する。
         if (!(username === undefined || username === "undefined")) {
+            myChild.send(
+                [
+                    "message",
+                    {
+                        "embed": {
+                            "author": {
+                                "name": `${username}${lang.join}`
+                            },
+                            "description": null,
+                            "color": 0x00ff00
+                        }
+                    }]);
+            if (username) {
+                connectionList.set(networkIdentifier, username);
+                nowlist.push(username);
+            }
             userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "device": player.deviceId }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
     })
-    event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIdentifier, packetId) => {
-        const connreq = ptr.connreq;
-        const cert = connreq.getCertificate();
-        if (connreq === null)
-            return; // wrong client
-        if (cert === null)
-            return; // wrong client ?
-        const username = cert.getId();
-        if (username) {
-            connectionList.set(networkIdentifier, username);
-            nowlist.push(username);
-        }
-        myChild.send(
-            [
-                "message",
-                {
-                    "embed": {
-                        "author": {
-                            "name": `${username}${lang.join}`
-                        },
-                        "description": null,
-                        "color": 0x00ff00
-                    }
-                }]);
-    });
-    event_1.events.networkDisconnected.on(networkIdentifier => {
-        const id = connectionList.get(networkIdentifier);
-        connectionList.delete(networkIdentifier);
-
-        const index = nowlist.indexOf(id);
-        nowlist.splice(index, 1);
+    //LEFTイベント
+    event_1.events.playerLeft.on((ev) => {
+        const id = ev.player.getNameTag();
         myChild.send(["message", {
             "embed": {
                 "author": {
@@ -139,7 +141,9 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 "color": 0xff0000
             }
         }]);
-    });
+    })
+
+    //コマンド登録(overloadで複数の引数を指定)
     const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
     dbchat.overload(
         (param, origin, output) => {

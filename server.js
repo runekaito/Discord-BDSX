@@ -1,3 +1,4 @@
+//ファイル群読み込み
 const fs = require("fs");
 const path = require("path");
 const filepath = path.resolve(__dirname, './');
@@ -23,6 +24,7 @@ function reload() {
     lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
 }
 
+//Discord Botログイン
 const { Client, GatewayIntentBits, EmbedBuilder, underscore } = require('discord.js');
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]
@@ -120,14 +122,17 @@ client.on('messageCreate', message => {
     } else {
     }
 });
-;
+//エラー処理
 process.on('unhandledRejection', error => {
     console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
 process.on('uncaughtException', (err) => {
     console.log('[Discord-BDSX]:ERROR!\nError Log:\n', err);
 });
+
+//index.jsからのイベント通知受信
 process.on('message', (message) => {
+    //Discordメッセージ送信
     if (message[0] === "message") {
         let embed;
         if (message[1].embed.author.name === undefined) {
@@ -143,7 +148,9 @@ process.on('message', (message) => {
         }
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "res") {
+        //コマンド結果受信
         let res = message[1];
+        //nullやundefinedだった場合の処理
         if (res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string") {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
@@ -152,6 +159,7 @@ process.on('message', (message) => {
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
+        //文字数制限に引っかかる場合の処理
         if (res.statusMessage.length > 4000) {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
@@ -160,18 +168,22 @@ process.on('message', (message) => {
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
+        //その他の通常の処理
         const embed = new EmbedBuilder()
             .setAuthor({ "name": "Server" })
             .setColor(0x00ff00)
             .setDescription(res.statusMessage)
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "list") {
+        //メンバーリスト受信
+        //文字数が超えない前提で書いている(おそらく超大規模ではない限り超えないはず。)
         let nowlist = message[1];
         let c = "";
         for (const player of nowlist) {
             c += `${player}\n`;
         }
         if (c.length == 0) {
+            //0人の処理
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x0000ff)
@@ -180,6 +192,7 @@ process.on('message', (message) => {
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
+        //その他の通常の処理
         const embed = new EmbedBuilder()
             .setAuthor({ "name": "Server" })
             .setColor(0x0000ff)
@@ -187,6 +200,7 @@ process.on('message', (message) => {
             .setFooter({text:message[2]})
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "reload") {
+        //reloadコマンド
         reload()
 
     }
