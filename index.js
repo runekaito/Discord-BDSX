@@ -34,12 +34,14 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             myChild.on('message', (message) => {
                 //コマンドを実行する
                 if (message[0] === "command") {
+                    if (launcher_1.bedrockServer.isClosed()) return;
                     let res = launcher_1.bedrockServer.executeCommand(message[1], cr.CommandResultType.Data);
                     if (!(message[2] === "mute")) {
                         myChild.send(["res", res.data])
                     }
                 } else if (message[0] === "list") {
                     //listを送る
+                    if (launcher_1.bedrockServer.isClosed()) return;
                     let m = [];
                     for (const player of server_1.serverInstance.getPlayers()) {
                         m.push(player.getNameTag());
@@ -51,7 +53,8 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 }
             });
         })
-    let nowlist = [];
+
+    //lang読み込み
     let country;
     if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
         country = "ja";
@@ -121,10 +124,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                             "color": 0x00ff00
                         }
                     }]);
-            if (username) {
-                connectionList.set(networkIdentifier, username);
-                nowlist.push(username);
-            }
             userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "device": player.deviceId }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }

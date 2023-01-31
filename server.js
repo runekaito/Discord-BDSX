@@ -41,7 +41,8 @@ client.on('messageCreate', message => {
     if (message.author.bot) return;//Bot無視
     if (message.channel.id === config.send_channelID) {
         //.evalコマンド
-        if (message.content.substr(0, `${config.discord_command.prefix}eval`.length + 1) === `${config.discord_command.prefix}eval `) {
+        if (message.content.startsWith(`${config.discord_command.prefix}eval `)) {
+            //権限チェック
             if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -61,9 +62,10 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] });
             }
             return;
-        }else if (message.content.substr(0, `${config.discord_command.prefix}userinfo`.length + 1) === `${config.discord_command.prefix}userinfo `){
+        } else if (message.content.startsWith(`${config.discord_command.prefix}userinfo `)) {
             //.userinfoコマンド
-            const userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
+
+            //権限チェック
             if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -72,6 +74,7 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] })
                 return;
             }
+            //引数チェック
             if (message.content.length <= `${config.discord_command.prefix}userinfo`.length + 1) {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -80,7 +83,8 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] });
                 return;
             }
-            if (message.content.substr(`${config.discord_command.prefix}userinfo`.length + 1) in userinfo){
+            const userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
+            if (message.content.substr(`${config.discord_command.prefix}userinfo`.length + 1) in userinfo) {
                 const username = message.content.substr(`${config.discord_command.prefix}userinfo`.length + 1);
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "User Info" })
@@ -118,8 +122,7 @@ client.on('messageCreate', message => {
             return;
         }
         //コマンドじゃない場合、チャット送信
-        process.send(["command", `tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}] ${message.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"}]}`, "mute"]);
-    } else {
+        process.send(["command", `tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, "mute"]);
     }
 });
 //エラー処理
@@ -134,23 +137,17 @@ process.on('uncaughtException', (err) => {
 process.on('message', (message) => {
     //Discordメッセージ送信
     if (message[0] === "message") {
-        let embed;
-        if (message[1].embed.author.name === undefined) {
-            embed = new EmbedBuilder()
-                .setAuthor({ "name": "undefined" })
-                .setColor(message[1].embed.color)
-                .setDescription(message[1].embed.description)
-        } else {
-            embed = new EmbedBuilder()
-                .setAuthor({ "name": message[1].embed.author.name })
-                .setColor(message[1].embed.color)
-                .setDescription(message[1].embed.description)
-        }
+        const embed = new EmbedBuilder()
+            .setAuthor({ "name": message[1].embed.author.name === undefined ? "undefined" : message[1].embed.author.name })
+            .setColor(message[1].embed.color)
+            .setDescription(message[1].embed.description)
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "res") {
         //コマンド結果受信
         let res = message[1];
+        console.log(res);
         //nullやundefinedだった場合の処理
+        /*
         if (res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string") {
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
@@ -173,22 +170,28 @@ process.on('message', (message) => {
             .setAuthor({ "name": "Server" })
             .setColor(0x00ff00)
             .setDescription(res.statusMessage)
+        */
+
+        const embed = new EmbedBuilder()
+            .setAuthor({ "name": res.statusCode === 0 ? "Success" : "Error" })
+            .setColor(res.statusCode === 0 ? 0x00ff00 : 0xff0000)
+            .setDescription(res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string" ? "(null)" : res.statusMessage.length > 4000 ? `${res.statusMessage.substr(0, 4000)}...` : res.statusMessage)
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "list") {
         //メンバーリスト受信
-        //文字数が超えない前提で書いている(おそらく超大規模ではない限り超えないはず。)
-        let nowlist = message[1];
+        const nowlist = message[1];
         let c = "";
         for (const player of nowlist) {
             c += `${player}\n`;
         }
+        /*
         if (c.length == 0) {
             //0人の処理
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x0000ff)
                 .setDescription(lang.no_player)
-                .setFooter({text:message[2]})
+                .setFooter({ text: message[2] })
             client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
             return;
         }
@@ -197,12 +200,17 @@ process.on('message', (message) => {
             .setAuthor({ "name": "Server" })
             .setColor(0x0000ff)
             .setDescription(c)
-            .setFooter({text:message[2]})
+            .setFooter({ text: message[2] })
+        */
+        const embed = new EmbedBuilder()
+            .setAuthor({ "name": "Server" })
+            .setColor(0x0000ff)
+            .setDescription(c.length == 0 ? lang.no_player : c.length > 4000 ? `${c.substr(0, 4000)}...` : c)
+            .setFooter({ text: message[2] })
         client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
     } else if (message[0] === "reload") {
         //reloadコマンド
-        reload()
-
+        reload();
     }
 });
 client.login(config.token);
