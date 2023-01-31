@@ -41,7 +41,16 @@ client.on('messageCreate', message => {
     if (message.author.bot) return;//Bot無視
     if (message.channel.id === config.send_channelID) {
         //.evalコマンド
-        if (message.content.startsWith(`${config.discord_command.prefix}eval `)) {
+        if (message.content.split(" ")[0] == `${config.discord_command.prefix}eval`) {
+            //引数の有無確認
+            if (message.content.split(" ").length === 1) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.arg_err)
+                message.channel.send({ embeds: [embed] })
+                return;
+            }
             //権限チェック
             if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
                 const embed = new EmbedBuilder()
@@ -51,6 +60,7 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] })
                 return;
             }
+            //スペースまできちんとあるか？
             if (message.content.length > `${config.discord_command.prefix}eval`.length + 1) {
                 process.send(["command", message.content.substr(`${config.discord_command.prefix}eval`.length + 1), "data"]);
                 process.send(["log", `[Discord-BDSX]${message.author.username} executed: ${message.content.substr(`${config.discord_command.prefix}eval`.length + 1)}`]);
@@ -62,9 +72,18 @@ client.on('messageCreate', message => {
                 message.channel.send({ embeds: [embed] });
             }
             return;
-        } else if (message.content.startsWith(`${config.discord_command.prefix}userinfo `)) {
+        } else if (message.content.split(" ")[0] == `${config.discord_command.prefix}userinfo`) {
             //.userinfoコマンド
 
+            //引数の有無確認
+            if (message.content.split(" ").length === 1) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_arg_err)
+                message.channel.send({ embeds: [embed] })
+                return;
+            }
             //権限チェック
             if (!(message.member.roles.cache.has(config.OP_command.roleId) && config.OP_command.bool)) {
                 const embed = new EmbedBuilder()
@@ -101,11 +120,27 @@ client.on('messageCreate', message => {
             return;
         }
         //.listコマンド
-        if (config.discord_command.bool && message.content == config.discord_command.prefix + "list") {
+        if (message.content.split(" ")[0] == config.discord_command.prefix + "list") {
+            if (!(config.discord_command.bool)) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.disabled)
+                message.channel.send({ embeds: [embed] });
+                return;
+            }
             process.send(["list"])
             return;
             //.pingコマンド
-        } else if (config.discord_command.bool && message.content == config.discord_command.prefix + "ping") {
+        } else if (message.content.split(" ")[0] == config.discord_command.prefix + "ping") {
+            if (!(config.discord_command.bool)) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.disabled)
+                message.channel.send({ embeds: [embed] });
+                return;
+            }
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x00ff00)
@@ -113,7 +148,15 @@ client.on('messageCreate', message => {
             message.channel.send({ embeds: [embed] });
             return;
             //.infoコマンド
-        } else if (config.discord_command.bool && message.content == config.discord_command.prefix + "info") {
+        } else if (message.content.split(" ")[0] == config.discord_command.prefix + "info") {
+            if (!(config.discord_command.bool)) {
+                const embed = new EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.disabled)
+                message.channel.send({ embeds: [embed] });
+                return;
+            }
             const embed = new EmbedBuilder()
                 .setAuthor({ "name": "Plugin Info" })
                 .setColor(0x00ff00)
