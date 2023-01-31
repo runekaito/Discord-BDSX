@@ -129,8 +129,8 @@ client.on('messageCreate', message => {
 process.on('unhandledRejection', error => {
     console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
-process.on('uncaughtException', (err) => {
-    console.log('[Discord-BDSX]:ERROR!\nError Log:\n', err);
+process.on('uncaughtException', (error) => {
+    console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
 
 //index.jsからのイベント通知受信
@@ -145,33 +145,6 @@ process.on('message', (message) => {
     } else if (message[0] === "res") {
         //コマンド結果受信
         let res = message[1];
-        console.log(res);
-        //nullやundefinedだった場合の処理
-        /*
-        if (res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string") {
-            const embed = new EmbedBuilder()
-                .setAuthor({ "name": "Server" })
-                .setColor(0x00ff00)
-                .setDescription("(null)")
-            client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
-            return;
-        }
-        //文字数制限に引っかかる場合の処理
-        if (res.statusMessage.length > 4000) {
-            const embed = new EmbedBuilder()
-                .setAuthor({ "name": "Server" })
-                .setColor(0x00ff00)
-                .setDescription(`${res.statusMessage.substr(0, 4000)}...`)
-            client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
-            return;
-        }
-        //その他の通常の処理
-        const embed = new EmbedBuilder()
-            .setAuthor({ "name": "Server" })
-            .setColor(0x00ff00)
-            .setDescription(res.statusMessage)
-        */
-
         const embed = new EmbedBuilder()
             .setAuthor({ "name": res.statusCode === 0 ? "Success" : "Error" })
             .setColor(res.statusCode === 0 ? 0x00ff00 : 0xff0000)
@@ -184,24 +157,6 @@ process.on('message', (message) => {
         for (const player of nowlist) {
             c += `${player}\n`;
         }
-        /*
-        if (c.length == 0) {
-            //0人の処理
-            const embed = new EmbedBuilder()
-                .setAuthor({ "name": "Server" })
-                .setColor(0x0000ff)
-                .setDescription(lang.no_player)
-                .setFooter({ text: message[2] })
-            client.channels.cache.get(config.send_channelID).send({ embeds: [embed] });
-            return;
-        }
-        //その他の通常の処理
-        const embed = new EmbedBuilder()
-            .setAuthor({ "name": "Server" })
-            .setColor(0x0000ff)
-            .setDescription(c)
-            .setFooter({ text: message[2] })
-        */
         const embed = new EmbedBuilder()
             .setAuthor({ "name": "Server" })
             .setColor(0x0000ff)
