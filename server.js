@@ -172,7 +172,7 @@ client.on('messageCreate', message => {
 process.on('unhandledRejection', error => {
     console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
     console.log('[Discord-BDSX]:ERROR!\nError Log:\n', error);
 });
 
