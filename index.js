@@ -23,6 +23,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
     let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
     const node_dl = require(`${filepath}/modules/node-dl.js`);
+    const did = require(`${filepath}/modules/deviceID.js`);
 
     //Node.exeをダウンロードしBotを起動する
     let myChild;
@@ -124,7 +125,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                             "color": 0x00ff00
                         }
                     }]);
-            userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "device": player.deviceId }
+            userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "deviceId": did.parse(player.deviceId), "deviceType":common_1.BuildPlatform[player.getPlatform()] || "Unknown"}
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
     })
@@ -141,7 +142,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         }]);
     })
-
+    event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIdentifier, packetId) => {
+        const connreq = ptr.connreq;
+        connreq.getDeviceOS
+    });
     //コマンド登録(overloadで複数の引数を指定)
     const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
     dbchat.overload(

@@ -108,7 +108,7 @@ client.on('messageCreate', message => {
                 const embed = new EmbedBuilder()
                     .setAuthor({ "name": "User Info" })
                     .setColor(0x0000ff)
-                    .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceID**:\n${userinfo[username]["device"]}`)
+                    .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceID**:\n${userinfo[username]["deviceId"]}\n**DeviceType**:\n${userinfo[username]["deviceType"]}`)
                 message.channel.send({ embeds: [embed] });
             } else {
                 const embed = new EmbedBuilder()
