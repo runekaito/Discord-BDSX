@@ -141,10 +141,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 "color": 0xff0000
             }
         }]);
-    })
-    event_1.events.packetAfter(bdsx_1.MinecraftPacketIds.Login).on((ptr, networkIdentifier, packetId) => {
-        const connreq = ptr.connreq;
-        connreq.getDeviceOS
     });
     //コマンド登録(overloadで複数の引数を指定)
     const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
