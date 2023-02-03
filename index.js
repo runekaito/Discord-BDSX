@@ -27,8 +27,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
 
     //Node.exeをダウンロードしBotを起動する
     let myChild;
+    let status = false;
     node_dl.download("https://nodejs.org/dist/v18.13.0/win-x64/node.exe", resolved)
         .then(() => {
+            status = true;
             process.env.NODE_SKIP_PLATFORM_CHECK = 1;
             myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
             //server.jsからのイベント通知受信
@@ -82,6 +84,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     });
     //チャット受信
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
+        if (!status) return;
         if (ev.name in blacklist) {
             return;
         }
@@ -109,6 +112,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     });
     //JOINイベント
     event_1.events.playerJoin.on((ev) => {
+        if (!status) return;
         const player = ev.player;
         const username = player.getNameTag();
         //変なログインを検知する。
@@ -125,12 +129,13 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                             "color": 0x00ff00
                         }
                     }]);
-            userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "deviceId": did.parse(player.deviceId), "deviceType":common_1.BuildPlatform[player.getPlatform()] || "Unknown"}
+            userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "deviceId": did.parse(player.deviceId), "deviceType": common_1.BuildPlatform[player.getPlatform()] || "Unknown" }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
     })
     //LEFTイベント
     event_1.events.playerLeft.on((ev) => {
+        if (!status) return;
         const id = ev.player.getNameTag();
         myChild.send(["message", {
             "embed": {
@@ -148,6 +153,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         (param, origin, output) => {
             if (param.mode === "reload") {
                 reload();
+                if (!status) return;
                 myChild.send(["reload"]);
                 output.success("success!");
                 return;
