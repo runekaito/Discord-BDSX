@@ -1,5 +1,5 @@
 {
-    "version":"1.5.1",
+    "version":"2.1.3",
     "author":"kaito02020424",
     "ja":{
         "eval_err":".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
@@ -12,6 +12,7 @@
         "userinfo_per_err":".userinfoコマンドを使用する権限がない、もしくは機能が有効になっていません。",
         "userinfo_arg_err":"引数エラー:検索するユーザーを指定してください。",
         "userinfo_not_found":"ユーザーが見つかりません。",
+        "disabled":"機能が無効になっています。",
         "__memo":"今後追加予定..."
     },
     "en":{
@@ -25,6 +26,7 @@
         "userinfo_per_err":"You do not have permission to use the .userinfo command or the function is not enabled.",
         "userinfo_arg_err":"Argument error: Specify user to search.",
         "userinfo_not_found":"User not found.",
+        "disabled":"The function is disabled.",
         "__memo":"More to be added in the future..."
     }
 }
