@@ -95,7 +95,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         "name": ev.name
                     },
                     "description": `${ev.message.substr(0, 4000)}...`,
-                    "color": 0x000000
+                    "color": 0x0000ff
                 }
             }]);
             return;
@@ -106,7 +106,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     "name": ev.name
                 },
                 "description": ev.message,
-                "color": 0x000000
+                "color": 0x0000ff
             }
         }]);
     });
