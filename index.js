@@ -95,7 +95,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         "name": ev.name
                     },
                     "description": `${ev.message.substr(0, 4000)}...`,
-                    "color": 0x0000ff
+                    "color": 0x000000
                 }
             }]);
             return;
@@ -106,7 +106,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     "name": ev.name
                 },
                 "description": ev.message,
-                "color": 0x0000ff
+                "color": 0x000000
             }
         }]);
     });
@@ -147,6 +147,12 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             }
         }]);
     });
+    //server leaveイベント
+    event_1.events.serverLeave.on(() => {
+        if (myChild === null || myChild === undefined) return;
+        process.kill(myChild.pid)
+        console.log("[Discord-BDSX] Disconnect")
+    })
     //コマンド登録(overloadで複数の引数を指定)
     const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
     dbchat.overload(
