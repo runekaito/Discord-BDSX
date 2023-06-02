@@ -1,5 +1,5 @@
 {
-    "version":"2.1.4",
+    "version":"2.2.4",
     "author":"kaito02020424",
     "ja":{
         "eval_err":".evalコマンドを使用する権限がない、もしくは機能が有効になっていません。",
@@ -13,6 +13,8 @@
         "userinfo_arg_err":"引数エラー:検索するユーザーを指定してください。",
         "userinfo_not_found":"ユーザーが見つかりません。",
         "disabled":"機能が無効になっています。",
+        "startBackup":"バックアップを開始しています...。",
+        "finishBackup":"バックアップが完了しました。",
         "__memo":"今後追加予定..."
     },
     "en":{
@@ -27,6 +29,8 @@
         "userinfo_arg_err":"Argument error: Specify user to search.",
         "userinfo_not_found":"User not found.",
         "disabled":"The function is disabled.",
+        "startBackup":"Running Backup...",
+        "finishBackup":"Backup Completed.",
         "__memo":"More to be added in the future..."
     }
 }

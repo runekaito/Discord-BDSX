@@ -153,6 +153,33 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         process.kill(myChild.pid)
         console.log("[Discord-BDSX] Disconnect")
     })
+    //backup イベント
+    //kaito02020424/BDSX-Backup想定
+    if (config.allowBackupLog) {
+        const { backupApi } = require("@bdsx/BDSX-Backup/api");
+        backupApi.on("startBackup",() => {
+            myChild.send(["message", {
+                "embed": {
+                    "author": {
+                        "name": "Server"
+                    },
+                    "description": lang.startBackup,
+                    "color": 0x0000ff
+                }
+            }]);
+        });
+        backupApi.on("finishBackup",() => {
+            myChild.send(["message", {
+                "embed": {
+                    "author": {
+                        "name": "Server"
+                    },
+                    "description": lang.finishBackup,
+                    "color": 0x0000ff
+                }
+            }]);
+        })
+    }
     //コマンド登録(overloadで複数の引数を指定)
     const dbchat = command_2.command.register("dbchat", "Discord-BDSX configs setting.", command_1.CommandPermissionLevel.Operator);
     dbchat.overload(

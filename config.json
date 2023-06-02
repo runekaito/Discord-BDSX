@@ -9,5 +9,6 @@
         "bool":true,
         "roleId":"OP role id"
     },
-    "lang":"ja"
+    "lang":"ja",
+    "allowBackupLog":false
 }
