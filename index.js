@@ -12,8 +12,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const cr = require("bdsx/commandresult");
 
     //Discord Bot用のimport
-    const childProcess = require('child_process');
-
+    const discord = require("@bdsx/discord-module")
     //ファイル群読み込み
     const fs = require("fs");
     const path = require("path");
@@ -21,42 +20,57 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const resolved = path.resolve(__dirname, "./bin/node.exe");
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
-    let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+    let config = require("./config.json")
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
+
+    const client = new discord.Client(config.token, new discord.Intents().AllIntents)
 
     //Node.exeをダウンロードしBotを起動する
     let myChild;
     let status = false;
-    node_dl.download("https://nodejs.org/dist/v18.13.0/win-x64/node.exe", resolved)
-        .then(() => {
-            status = true;
-            process.env.NODE_SKIP_PLATFORM_CHECK = 1;
-            myChild = childProcess.fork(`${filepath}/server.js`, { "execPath": resolved });
-            //server.jsからのイベント通知受信
-            myChild.on('message', (message) => {
-                //コマンドを実行する
-                if (message[0] === "command") {
-                    if (launcher_1.bedrockServer.isClosed()) return;
-                    let res = launcher_1.bedrockServer.executeCommand(message[1], cr.CommandResultType.Data);
-                    if (!(message[2] === "mute")) {
-                        myChild.send(["res", res.data])
-                    }
-                } else if (message[0] === "list") {
-                    //listを送る
-                    if (launcher_1.bedrockServer.isClosed()) return;
-                    let m = [];
-                    for (const player of server_1.serverInstance.getPlayers()) {
-                        m.push(player.getNameTag());
-                    }
-                    myChild.send(["list", m, `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}`]);
-                } else if (message[0] === "log") {
-                    //標準出力が異なる場合の画面表示
-                    console.log(message[1]);
-                }
-            });
+    discord.discordEventsList.Ready.on(() => {
+        if (status) return
+        status = true;
+        const embed = new discord.EmbedBuilder()
+            .setAuthor({ "name": "Server" })
+            .setColor(0x00ff00)
+            .setDescription(lang.open)
+        client.getChannel(config.send_channelID).sendMessage({
+            embeds: [embed]
         })
-
+    })
+    discord.discordEventsList.MessageCreate.on((payload) => {
+        const message = payload.content
+        //コマンドを実行する
+        //ToDO:権限チェック
+        if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) {
+            if (launcher_1.bedrockServer.isClosed()) return;
+            let res = launcher_1.bedrockServer.executeCommand(message.split(" ")[1], cr.CommandResultType.Data);
+            const embed = new discord.EmbedBuilder()
+                .setAuthor({ "name": res.statusCode === 0 ? "Success" : "Error" })
+                .setColor(res.statusCode === 0 ? 0x00ff00 : 0xff0000)
+                .setDescription(res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string" ? "(null)" : res.statusMessage.length > 4000 ? `${res.statusMessage.substr(0, 4000)}...` : res.statusMessage)
+            client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) {
+            //listを送る
+            if (launcher_1.bedrockServer.isClosed()) return;
+            let m = [];
+            for (const player of server_1.serverInstance.getPlayers()) {
+                m.push(player.getNameTag());
+            }
+            let c = "";
+            for (const player of m) {
+                c += `${player}\n`;
+            }
+            const embed = new discord.EmbedBuilder()
+                .setAuthor({ "name": "Server" })
+                .setColor(0x0000ff)
+                .setDescription(c.length == 0 ? lang.no_player : c.length > 4000 ? `${c.substr(0, 4000)}...` : c)
+                .setFooter({ text: `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}` })
+            client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+        }
+    });
     //lang読み込み
     let country;
     if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
@@ -89,26 +103,30 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             return;
         }
         if (ev.message.length > 4000) {
-            myChild.send(["message", {
-                "embed": {
-                    "author": {
-                        "name": ev.name
-                    },
-                    "description": `${ev.message.substr(0, 4000)}...`,
-                    "color": 0x0000ff
-                }
-            }]);
+            client.getChannel(config.send_channelID).sendMessage({
+                embeds: [
+                    {
+                        author: {
+                            name: ev.name
+                        },
+                        description: `${ev.message.substr(0, 4000)}...`,
+                        color: 0x0000ff
+                    }
+                ]
+            })
             return;
         }
-        myChild.send(["message", {
-            "embed": {
-                "author": {
-                    "name": ev.name
-                },
-                "description": ev.message,
-                "color": 0x0000ff
-            }
-        }]);
+        client.getChannel(config.send_channelID).sendMessage({
+            embeds: [
+                {
+                    author: {
+                        name: ev.name
+                    },
+                    description: ev.message,
+                    color: 0x0000ff
+                }
+            ]
+        })
     });
     //JOINイベント
     event_1.events.playerJoin.on((ev) => {
@@ -117,18 +135,16 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         const username = player.getNameTag();
         //変なログインを検知する。
         if (!(username === undefined || username === "undefined")) {
-            myChild.send(
-                [
-                    "message",
+            client.getChannel(config.send_channelID).sendMessage({
+                embeds: [
                     {
-                        "embed": {
-                            "author": {
-                                "name": `${username}${lang.join}`
-                            },
-                            "description": null,
-                            "color": 0x00ff00
-                        }
-                    }]);
+                        author: {
+                            name: `${username}${lang.join}`
+                        },
+                        color: 0x00ff00
+                    }
+                ]
+            })
             userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "deviceId": did.parse(player.deviceId), "deviceType": common_1.BuildPlatform[player.getPlatform()] || "Unknown" }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
@@ -137,47 +153,50 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.playerLeft.on((ev) => {
         if (!status) return;
         const id = ev.player.getNameTag();
-        myChild.send(["message", {
-            "embed": {
-                "author": {
-                    "name": `${id}${lang.leave}`
-                },
-                "description": null,
-                "color": 0xff0000
-            }
-        }]);
+        client.getChannel(config.send_channelID).sendMessage({
+            embeds: [
+                {
+                    author: {
+                        name: `${id}${lang.leave}`
+                    },
+                    color: 0xff0000
+                }
+            ]
+        })
     });
     //server leaveイベント
     event_1.events.serverLeave.on(() => {
-        if (myChild === null || myChild === undefined) return;
-        process.kill(myChild.pid)
         console.log("[Discord-BDSX] Disconnect")
     })
     //backup イベント
     //kaito02020424/BDSX-Backup想定
     if (config.allowBackupLog) {
         const { backupApi } = require("@bdsx/BDSX-Backup/api");
-        backupApi.on("startBackup",() => {
-            myChild.send(["message", {
-                "embed": {
-                    "author": {
-                        "name": "Server"
-                    },
-                    "description": lang.startBackup,
-                    "color": 0x0000ff
-                }
-            }]);
+        backupApi.on("startBackup", () => {
+            client.getChannel(config.send_channelID).sendMessage({
+                embeds: [
+                    {
+                        author: {
+                            name: "Server"
+                        },
+                        description: lang.startBackup,
+                        color: 0x0000ff
+                    }
+                ]
+            })
         });
-        backupApi.on("finishBackup",() => {
-            myChild.send(["message", {
-                "embed": {
-                    "author": {
-                        "name": "Server"
-                    },
-                    "description": lang.finishBackup,
-                    "color": 0x0000ff
-                }
-            }]);
+        backupApi.on("finishBackup", () => {
+            client.getChannel(config.send_channelID).sendMessage({
+                embeds: [
+                    {
+                        author: {
+                            name: "Server"
+                        },
+                        description: lang.finishBackup,
+                        color: 0x0000ff
+                    }
+                ]
+            })
         })
     }
     //コマンド登録(overloadで複数の引数を指定)
