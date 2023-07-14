@@ -27,7 +27,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const client = new discord.Client(config.token, new discord.Intents().AllIntents)
 
     //Node.exeをダウンロードしBotを起動する
-    let myChild;
     let status = false;
     discord.discordEventsList.Ready.on(() => {
         if (status) return
@@ -41,10 +40,26 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         })
     })
     discord.discordEventsList.MessageCreate.on((payload) => {
+        if (config.send_channelID !== payload.channel_id) return;
         const message = payload.content
         //コマンドを実行する
-        //ToDO:権限チェック
         if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) {
+            if (!client.getMember(client.getChannel(payload.channel_id).info.guild_id, payload.author.id).roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.eval_err)
+                client.getChannel(payload.channel_id).sendMessage(embed)
+                return;
+            }
+            if (message.split(" ").length < 2) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.arg_err)
+                client.getChannel(payload.channel_id).sendMessage(embed)
+                return;
+            }
             if (launcher_1.bedrockServer.isClosed()) return;
             let res = launcher_1.bedrockServer.executeCommand(message.split(" ")[1], cr.CommandResultType.Data);
             const embed = new discord.EmbedBuilder()
@@ -52,6 +67,8 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setColor(res.statusCode === 0 ? 0x00ff00 : 0xff0000)
                 .setDescription(res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string" ? "(null)" : res.statusMessage.length > 4000 ? `${res.statusMessage.substr(0, 4000)}...` : res.statusMessage)
             client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+            console.log(`[Discord-BDSX]${message.author.username} executed: ${message.split(" ")[1]}`)
+            return
         } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) {
             //listを送る
             if (launcher_1.bedrockServer.isClosed()) return;
@@ -69,6 +86,73 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setDescription(c.length == 0 ? lang.no_player : c.length > 4000 ? `${c.substr(0, 4000)}...` : c)
                 .setFooter({ text: `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}` })
             client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+            return
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) {
+            if (!client.getMember(client.getChannel(payload.channel_id).info.guild_id, payload.author.id).roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_per_err)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                return;
+            }
+            if (message.split(" ").length < 2) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_arg_err)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                return;
+            }
+            const userinfo = require("./database/userinfo.json")
+            if (message.split(" ")[1] in userinfo) {
+                const username = message.split(" ")[1]
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "User Info" })
+                    .setColor(0x0000ff)
+                    .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceID**:\n${userinfo[username]["deviceId"]}\n**DeviceType**:\n${userinfo[username]["deviceType"]}`)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+            } else {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.userinfo_not_found)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+            }
+            return
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) {
+            if (!(config.discord_command.bool)) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.disabled)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+                return;
+            }
+            const embed = new discord.EmbedBuilder()
+                .setAuthor({ "name": "Server" })
+                .setColor(0x00ff00)
+                .setDescription("**Pong!**")
+            client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+            return;
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {
+            if (!(config.discord_command.bool)) {
+                const embed = new discord.EmbedBuilder()
+                    .setAuthor({ "name": "Server" })
+                    .setColor(0xff0000)
+                    .setDescription(lang.disabled)
+                client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+                return;
+            }
+            const embed = new discord.EmbedBuilder()
+                .setAuthor({ "name": "Plugin Info" })
+                .setColor(0x00ff00)
+                .setDescription(`${lang.info[0]}${info.author}\n${lang.info[1]}${info.version}`)
+            client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+            return;
+        } else {
+            //コマンドじゃない場合、チャット送信
+            launcher_1.bedrockServer.serverInstance.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
         }
     });
     //lang読み込み
@@ -78,7 +162,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     } else {
         country = config.lang;
     }
-    let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
+    let lang = (require("./lang.json")[country]);
     //reload function
     function reload() {
         config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
@@ -166,6 +250,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     });
     //server leaveイベント
     event_1.events.serverLeave.on(() => {
+        client.disconnect()
         console.log("[Discord-BDSX] Disconnect")
     })
     //backup イベント
@@ -206,7 +291,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             if (param.mode === "reload") {
                 reload();
                 if (!status) return;
-                myChild.send(["reload"]);
                 output.success("success!");
                 return;
             } else {
