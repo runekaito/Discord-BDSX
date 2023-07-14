@@ -24,7 +24,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
 
-    const client = new discord.Client(config.token, new discord.Intents().AllIntents)
+    const client = new discord.Client(config.token, [new discord.Intents().AllIntents])
 
     //Node.exeをダウンロードしBotを起動する
     let status = false;
