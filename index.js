@@ -1,5 +1,34 @@
-//BDSXの起動を待つ
+//configなど読み込み
 const launcher_1 = require("bdsx/launcher");
+const discord = require("@bdsx/discord-module")
+let config = require("./config.json")
+
+//lang読み込み
+let country;
+const wnr = require("why-is-node-running")
+if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
+    country = "ja";
+} else {
+    country = config.lang;
+}
+let lang = (require("./lang.json")[country]);
+//Discordクライアント作成
+const client = new discord.Client(config.token, [new discord.Intents().AllIntents])
+
+//Readyイベント
+let status = false;
+discord.discordEventsList.Ready.on(() => {
+    if (status) return
+    status = true;
+    const embed = new discord.EmbedBuilder()
+        .setAuthor({ "name": "Server" })
+        .setColor(0x00ff00)
+        .setDescription(lang.open)
+    client.getChannel(config.send_channelID).sendMessage({
+        embeds: [embed]
+    })
+})
+//起動を待つ
 launcher_1.bedrockServer.afterOpen().then(() => {
     //BDSX系のimport
     const packetids_1 = require("bdsx/bds/packetids");
@@ -12,7 +41,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const cr = require("bdsx/commandresult");
 
     //Discord Bot用のimport
-    const discord = require("@bdsx/discord-module")
     //ファイル群読み込み
     const fs = require("fs");
     const path = require("path");
@@ -20,36 +48,24 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const resolved = path.resolve(__dirname, "./bin/node.exe");
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
-    let config = require("./config.json")
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
 
-    const client = new discord.Client(config.token, [new discord.Intents().AllIntents])
 
     //Node.exeをダウンロードしBotを起動する
-    let status = false;
-    discord.discordEventsList.Ready.on(() => {
-        if (status) return
-        status = true;
-        const embed = new discord.EmbedBuilder()
-            .setAuthor({ "name": "Server" })
-            .setColor(0x00ff00)
-            .setDescription(lang.open)
-        client.getChannel(config.send_channelID).sendMessage({
-            embeds: [embed]
-        })
-    })
+
     discord.discordEventsList.MessageCreate.on((payload) => {
+        if (payload.author.bot) return
         if (config.send_channelID !== payload.channel_id) return;
         const message = payload.content
         //コマンドを実行する
-        if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) {
-            if (!client.getMember(client.getChannel(payload.channel_id).info.guild_id, payload.author.id).roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
+        if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) { /*.evalコマンド*/ 
+            if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.eval_err)
-                client.getChannel(payload.channel_id).sendMessage(embed)
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
                 return;
             }
             if (message.split(" ").length < 2) {
@@ -57,19 +73,19 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.arg_err)
-                client.getChannel(payload.channel_id).sendMessage(embed)
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
                 return;
             }
             if (launcher_1.bedrockServer.isClosed()) return;
-            let res = launcher_1.bedrockServer.executeCommand(message.split(" ")[1], cr.CommandResultType.Data);
+            const res = launcher_1.bedrockServer.executeCommand(message.split(" ").slice(1).join(" "), cr.CommandResultType.OutputAndData);
             const embed = new discord.EmbedBuilder()
-                .setAuthor({ "name": res.statusCode === 0 ? "Success" : "Error" })
-                .setColor(res.statusCode === 0 ? 0x00ff00 : 0xff0000)
-                .setDescription(res.statusMessage === null || res.statusMessage === undefined || !typeof res.statusMessage === "string" ? "(null)" : res.statusMessage.length > 4000 ? `${res.statusMessage.substr(0, 4000)}...` : res.statusMessage)
-            client.getChannel(payload.id).sendMessage({ embeds: [embed] })
-            console.log(`[Discord-BDSX]${message.author.username} executed: ${message.split(" ")[1]}`)
+                .setAuthor({ "name": res.data.statusCode === 0 ? "Success" : "Error" })
+                .setColor(res.data.statusCode === 0 ? 0x00ff00 : 0xff0000)
+                .setDescription(res.data.statusMessage === null || res.data.statusMessage === undefined || !typeof res.data.statusMessage === "string" ? "(null)" : res.data.statusMessage.length > 4000 ? `${res.data.statusMessage.substr(0, 4000)}...` : res.data.statusMessage)
+            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+            console.log(`[Discord-BDSX]${payload.author.username} executed: ${message.split(" ").slice(1).join(" ")}`)
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) {
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) { /*.listコマンド*/ 
             //listを送る
             if (launcher_1.bedrockServer.isClosed()) return;
             let m = [];
@@ -85,15 +101,15 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setColor(0x0000ff)
                 .setDescription(c.length == 0 ? lang.no_player : c.length > 4000 ? `${c.substr(0, 4000)}...` : c)
                 .setFooter({ text: `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}` })
-            client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) {
-            if (!client.getMember(client.getChannel(payload.channel_id).info.guild_id, payload.author.id).roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) { /*.userinfoコマンド*/ 
+            if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_per_err)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
                 return;
             }
             if (message.split(" ").length < 2) {
@@ -101,7 +117,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_arg_err)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
                 return;
             }
             const userinfo = require("./database/userinfo.json")
@@ -111,58 +127,51 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "User Info" })
                     .setColor(0x0000ff)
                     .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceID**:\n${userinfo[username]["deviceId"]}\n**DeviceType**:\n${userinfo[username]["deviceType"]}`)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             } else {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_not_found)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] })
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             }
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) {
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) { /*.pingコマンド*/ 
             if (!(config.discord_command.bool)) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.disabled)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
                 return;
             }
             const embed = new discord.EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x00ff00)
                 .setDescription("**Pong!**")
-            client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
             return;
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {　/*.infoコマンド*/ 
             if (!(config.discord_command.bool)) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.disabled)
-                client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
                 return;
             }
             const embed = new discord.EmbedBuilder()
                 .setAuthor({ "name": "Plugin Info" })
                 .setColor(0x00ff00)
-                .setDescription(`${lang.info[0]}${info.author}\n${lang.info[1]}${info.version}`)
-            client.getChannel(payload.id).sendMessage({ embeds: [embed] });
+                .setDescription(`${lang.info[0]}${require("./lang.json").author}\n${lang.info[1]}${require("./lang.json").version}`)
+            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
             return;
         } else {
             //コマンドじゃない場合、チャット送信
-            launcher_1.bedrockServer.serverInstance.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${message.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.content.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
+            launcher_1.bedrockServer.serverInstance.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${payload.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
         }
     });
-    //lang読み込み
-    let country;
-    if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
-        country = "ja";
-    } else {
-        country = config.lang;
-    }
-    let lang = (require("./lang.json")[country]);
+
     //reload function
     function reload() {
         config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
@@ -252,6 +261,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.serverLeave.on(() => {
         client.disconnect()
         console.log("[Discord-BDSX] Disconnect")
+        wnr()
     })
     //backup イベント
     //kaito02020424/BDSX-Backup想定
@@ -364,3 +374,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         motion: command_2.command.enum("list", { list: "list" })
     });
 });
+
+//wsに接続
+client.connect()
