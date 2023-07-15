@@ -5,7 +5,6 @@ let config = require("./config.json")
 
 //lang読み込み
 let country;
-const wnr = require("why-is-node-running")
 if (config.lang === undefined || !(config.lang in { "ja": null, "en": null })) {
     country = "ja";
 } else {
@@ -261,7 +260,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.serverLeave.on(() => {
         client.disconnect()
         console.log("[Discord-BDSX] Disconnect")
-        wnr()
     })
     //backup イベント
     //kaito02020424/BDSX-Backup想定
