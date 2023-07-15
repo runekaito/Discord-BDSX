@@ -1,6 +1,6 @@
 //configなど読み込み
 const launcher_1 = require("bdsx/launcher");
-const discord = require("@bdsx/discord-module")
+const discord = require("bdsx-discord-module")
 let config = require("./config.json")
 
 //lang読み込み
