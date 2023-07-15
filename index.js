@@ -58,7 +58,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         if (config.send_channelID !== payload.channel_id) return;
         const message = payload.content
         //コマンドを実行する
-        if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) { /*.evalコマンド*/ 
+        if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) { /*.evalコマンド*/
             if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -84,7 +84,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             console.log(`[Discord-BDSX]${payload.author.username} executed: ${message.split(" ").slice(1).join(" ")}`)
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) { /*.listコマンド*/ 
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) { /*.listコマンド*/
             //listを送る
             if (launcher_1.bedrockServer.isClosed()) return;
             let m = [];
@@ -102,7 +102,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setFooter({ text: `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}` })
             client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) { /*.userinfoコマンド*/ 
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) { /*.userinfoコマンド*/
             if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -135,7 +135,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
             }
             return
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) { /*.pingコマンド*/ 
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) { /*.pingコマンド*/
             if (!(config.discord_command.bool)) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -150,7 +150,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setDescription("**Pong!**")
             client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
             return;
-        } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {　/*.infoコマンド*/ 
+        } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {　/*.infoコマンド*/
             if (!(config.discord_command.bool)) {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
@@ -258,8 +258,14 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     });
     //server leaveイベント
     event_1.events.serverLeave.on(() => {
-        client.disconnect()
-        console.log("[Discord-BDSX] Disconnect")
+        const embed = new discord.EmbedBuilder()
+            .setAuthor({ name: "Server" })
+            .setDescription(lang.close)
+            .setColor(0xff0000)
+        client.getChannel(config.send_channelID).sendMessage({ embeds: [embed] }).finally(() => {
+            client.disconnect()
+            console.log("[Discord-BDSX] Disconnect")
+        })
     })
     //backup イベント
     //kaito02020424/BDSX-Backup想定
