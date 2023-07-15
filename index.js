@@ -167,7 +167,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             return;
         } else {
             //コマンドじゃない場合、チャット送信
-            launcher_1.bedrockServer.serverInstance.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${payload.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
+            launcher_1.bedrockServer.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${payload.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
         }
     });
 
