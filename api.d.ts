@@ -2,10 +2,10 @@ import { Player } from "bdsx/bds/player";
 import { RESTPostAPIChannelMessageJSONBody, GatewayMessageCreateDispatchData } from "discord-api-types/v10";
 import { TextPacket } from "bdsx/bds/packets";
 export declare const postMessageToDiscord: {
-    on: (callback: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, cancel: {
+    on: (callback: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, sendChannelId: string, cancel: {
         cancel: boolean;
     }) => any) => void;
-    emit: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, cancel: {
+    emit: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, sendChannelId: string, cancel: {
         cancel: boolean;
     }) => void;
 };

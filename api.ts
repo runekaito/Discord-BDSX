@@ -6,11 +6,11 @@ const dbchatApi = new event.EventEmitter
 
 
 export const postMessageToDiscord = {
-    on: (callback: { (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }): any }) => {
+    on: (callback: { (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, sendChannelId: string, cancel: { cancel: boolean }): any }) => {
         dbchatApi.on("postMessageToDiscord", callback)
     },
-    emit: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }) => {
-        dbchatApi.emit("postMessageToDiscord", packet, payload, cancel)
+    emit: (packet: TextPacket, payload: RESTPostAPIChannelMessageJSONBody, sendChannelId: string, cancel: { cancel: boolean }) => {
+        dbchatApi.emit("postMessageToDiscord", packet, payload, sendChannelId, cancel)
     }
 }
 

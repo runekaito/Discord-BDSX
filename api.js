@@ -7,8 +7,8 @@ exports.postMessageToDiscord = {
     on: (callback) => {
         dbchatApi.on("postMessageToDiscord", callback);
     },
-    emit: (packet, payload, cancel) => {
-        dbchatApi.emit("postMessageToDiscord", packet, payload, cancel);
+    emit: (packet, payload, sendChannelId, cancel) => {
+        dbchatApi.emit("postMessageToDiscord", packet, payload, sendChannelId, cancel);
     }
 };
 exports.postMessageToMinecraft = {

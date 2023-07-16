@@ -193,6 +193,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     });
     //チャット受信
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
+        let sendChannelId = config.send_channelID
         if (!status) return;
         if (ev.name in blacklist) {
             return;
@@ -210,9 +211,9 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 ]
             }
             let cancel = { cancel: false }
-            api.postMessageToDiscord.emit(ev, payload, cancel)
+            api.postMessageToDiscord.emit(ev, payload, sendChannelId, cancel)
             if (cancel.cancel) return
-            client.getChannel(config.send_channelID).sendMessage(payload)
+            client.getChannel(sendChannelId).sendMessage(payload)
             return;
         }
         let payload = {
@@ -227,9 +228,9 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             ]
         }
         let cancel = { cancel: false }
-        api.postMessageToDiscord.emit(ev, payload, cancel)
+        api.postMessageToDiscord.emit(ev, payload, sendChannelId, cancel)
         if (cancel.cancel) return
-        client.getChannel(config.send_channelID).sendMessage(payload)
+        client.getChannel(sendChannelId).sendMessage(payload)
     });
     //JOINイベント
     event_1.events.playerJoin.on((ev) => {
