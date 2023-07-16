@@ -14,6 +14,9 @@ let lang = (require("./lang.json")[country]);
 //Discordクライアント作成
 const client = new discord.Client(config.token, [new discord.Intents().AllIntents])
 
+//APIロード
+const api = require("./api")
+
 //Readyイベント
 let status = false;
 discord.discordEventsList.Ready.on(() => {
@@ -39,7 +42,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const common_1 = require("bdsx/common");
     const cr = require("bdsx/commandresult");
 
-    //Discord Bot用のimport
     //ファイル群読み込み
     const fs = require("fs");
     const path = require("path");
@@ -50,13 +52,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
 
-
-    //Node.exeをダウンロードしBotを起動する
-
     discord.discordEventsList.MessageCreate.on((payload) => {
         if (payload.author.bot) return
         if (config.send_channelID !== payload.channel_id) return;
-        const message = payload.content
+        let message = payload.content
         //コマンドを実行する
         if (message.split(" ")[0] === `${config.discord_command.prefix}eval`) { /*.evalコマンド*/
             if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
@@ -166,6 +165,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
             return;
         } else {
+            let cancel = { cancel: false }
+            api.postMessageToMinecraft.emit(payload, cancel)
+            message = payload.content
+            if (cancel.cancel) return
             //コマンドじゃない場合、チャット送信
             launcher_1.bedrockServer.executeCommand(`tellraw @a {"rawtext":[{"text":"[Discord][${payload.author.username.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r] ${message.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}§r"}]}`, cr.CommandResultType.Mute);
         }
@@ -195,7 +198,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             return;
         }
         if (ev.message.length > 4000) {
-            client.getChannel(config.send_channelID).sendMessage({
+            let payload = {
                 embeds: [
                     {
                         author: {
@@ -205,10 +208,14 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         color: 0x0000ff
                     }
                 ]
-            })
+            }
+            let cancel = { cancel: false }
+            api.postMessageToDiscord.emit(ev, payload, cancel)
+            if (cancel.cancel) return
+            client.getChannel(config.send_channelID).sendMessage(payload)
             return;
         }
-        client.getChannel(config.send_channelID).sendMessage({
+        let payload = {
             embeds: [
                 {
                     author: {
@@ -218,7 +225,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     color: 0x0000ff
                 }
             ]
-        })
+        }
+        let cancel = { cancel: false }
+        api.postMessageToDiscord.emit(ev, payload, cancel)
+        if (cancel.cancel) return
+        client.getChannel(config.send_channelID).sendMessage(payload)
     });
     //JOINイベント
     event_1.events.playerJoin.on((ev) => {
@@ -227,7 +238,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         const username = player.getNameTag();
         //変なログインを検知する。
         if (!(username === undefined || username === "undefined")) {
-            client.getChannel(config.send_channelID).sendMessage({
+            let payload = {
                 embeds: [
                     {
                         author: {
@@ -236,7 +247,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                         color: 0x00ff00
                     }
                 ]
-            })
+            }
+            let cancel = { cancel: false }
+            api.playerJoin.emit(ev.player, payload, cancel)
+            if (cancel.cancel) return
+            client.getChannel(config.send_channelID).sendMessage(payload)
             userinfo[username] = { "ip": player.getNetworkIdentifier().getAddress(), "xuid": player.getXuid(), "deviceId": did.parse(player.deviceId), "deviceType": common_1.BuildPlatform[player.getPlatform()] || "Unknown" }
             fs.writeFileSync(`${filepath}/database/userinfo.json`, JSON.stringify(userinfo, null, 4));
         }
@@ -245,7 +260,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.playerLeft.on((ev) => {
         if (!status) return;
         const id = ev.player.getNameTag();
-        client.getChannel(config.send_channelID).sendMessage({
+        let payload = {
             embeds: [
                 {
                     author: {
@@ -254,7 +269,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     color: 0xff0000
                 }
             ]
-        })
+        }
+        let cancel = { cancel: false }
+        api.playerJoin.emit(ev.player, payload, cancel)
+        if (cancel.cancel) return
+        client.getChannel(config.send_channelID).sendMessage(payload)
     });
     //server leaveイベント
     event_1.events.serverLeave.on(() => {
