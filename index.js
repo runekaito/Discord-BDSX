@@ -63,7 +63,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.eval_err)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("eval", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
                 return;
             }
             if (message.split(" ").length < 2) {
@@ -71,7 +75,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.arg_err)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("eval", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
                 return;
             }
             if (launcher_1.bedrockServer.isClosed()) return;
@@ -80,7 +88,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setAuthor({ "name": res.data.statusCode === 0 ? "Success" : "Error" })
                 .setColor(res.data.statusCode === 0 ? 0x00ff00 : 0xff0000)
                 .setDescription(res.data.statusMessage === null || res.data.statusMessage === undefined || !typeof res.data.statusMessage === "string" ? "(null)" : res.data.statusMessage.length > 4000 ? `${res.data.statusMessage.substr(0, 4000)}...` : res.data.statusMessage)
-            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+            let sendPayload = { embeds: [embed] }
+            let cancel = { cancel: false }
+            api.runDiscordCommand.emit("eval", sendPayload, cancel)
+            if (cancel.cancel) return;
+            client.getChannel(payload.channel_id).sendMessage(sendPayload)
             console.log(`[Discord-BDSX]${payload.author.username} executed: ${message.split(" ").slice(1).join(" ")}`)
             return
         } else if (message.split(" ")[0] === `${config.discord_command.prefix}list`) { /*.listコマンド*/
@@ -88,7 +100,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             if (launcher_1.bedrockServer.isClosed()) return;
             let m = [];
             for (const player of server_1.serverInstance.getPlayers()) {
-                m.push(player.getNameTag());
+                m.push(api.dbchatFormatter.username(player.getNameTag()));
             }
             let c = "";
             for (const player of m) {
@@ -99,7 +111,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 .setColor(0x0000ff)
                 .setDescription(c.length == 0 ? lang.no_player : c.length > 4000 ? `${c.substr(0, 4000)}...` : c)
                 .setFooter({ text: `${server_1.serverInstance.getPlayers().length}/${server_1.serverInstance.getMaxPlayers()}` })
-            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+            let sendPayload = { embeds: [embed] }
+            let cancel = { cancel: false }
+            api.runDiscordCommand.emit("list", sendPayload, cancel)
+            if (cancel.cancel) return;
+            client.getChannel(payload.channel_id).sendMessage(sendPayload)
             return
         } else if (message.split(" ")[0] === `${config.discord_command.prefix}userinfo`) { /*.userinfoコマンド*/
             if (!payload.member.roles.includes(config.OP_command.roleId) || !config.OP_command.bool) {
@@ -107,7 +123,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_per_err)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("userinfo", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
                 return;
             }
             if (message.split(" ").length < 2) {
@@ -115,7 +135,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_arg_err)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("userinfo", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
                 return;
             }
             const userinfo = require("./database/userinfo.json")
@@ -125,13 +149,21 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "User Info" })
                     .setColor(0x0000ff)
                     .setDescription(`**NameTag**:\n${username}\n**XUID**:\n${userinfo[username]["xuid"]}\n**DeviceID**:\n${userinfo[username]["deviceId"]}\n**DeviceType**:\n${userinfo[username]["deviceType"]}`)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("userinfo", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
             } else {
                 const embed = new discord.EmbedBuilder()
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.userinfo_not_found)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] })
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("userinfo", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload)
             }
             return
         } else if (message.split(" ")[0] === `${config.discord_command.prefix}ping`) { /*.pingコマンド*/
@@ -140,14 +172,22 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.disabled)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("ping", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload);
                 return;
             }
             const embed = new discord.EmbedBuilder()
                 .setAuthor({ "name": "Server" })
                 .setColor(0x00ff00)
                 .setDescription("**Pong!**")
-            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
+            let sendPayload = { embeds: [embed] }
+            let cancel = { cancel: false }
+            api.runDiscordCommand.emit("ping", sendPayload, cancel)
+            if (cancel.cancel) return;
+            client.getChannel(payload.channel_id).sendMessage(sendPayload);
             return;
         } else if (message.split(" ")[0] === `${config.discord_command.prefix}info`) {　/*.infoコマンド*/
             if (!(config.discord_command.bool)) {
@@ -155,14 +195,22 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                     .setAuthor({ "name": "Server" })
                     .setColor(0xff0000)
                     .setDescription(lang.disabled)
-                client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
+                let sendPayload = { embeds: [embed] }
+                let cancel = { cancel: false }
+                api.runDiscordCommand.emit("info", sendPayload, cancel)
+                if (cancel.cancel) return;
+                client.getChannel(payload.channel_id).sendMessage(sendPayload);
                 return;
             }
             const embed = new discord.EmbedBuilder()
                 .setAuthor({ "name": "Plugin Info" })
                 .setColor(0x00ff00)
                 .setDescription(`${lang.info[0]}${require("./lang.json").author}\n${lang.info[1]}${require("./lang.json").version}`)
-            client.getChannel(payload.channel_id).sendMessage({ embeds: [embed] });
+            let sendPayload = { embeds: [embed] }
+            let cancel = { cancel: false }
+            api.runDiscordCommand.emit("info", sendPayload, cancel)
+            if (cancel.cancel) return;
+            client.getChannel(payload.channel_id).sendMessage(sendPayload);
             return;
         } else {
             let cancel = { cancel: false }
@@ -195,7 +243,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.packetBefore(packetids_1.MinecraftPacketIds.Text).on(ev => {
         let sendChannelId = config.send_channelID
         if (!status) return;
-        if (ev.name in blacklist) {
+        if (api.dbchatFormatter.username(ev.name) in blacklist) {
             return;
         }
         if (ev.message.length > 4000) {
@@ -203,7 +251,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 embeds: [
                     {
                         author: {
-                            name: ev.name
+                            name: api.dbchatFormatter.username(ev.name)
                         },
                         description: `${ev.message.substr(0, 4000)}...`,
                         color: 0x0000ff
@@ -220,7 +268,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             embeds: [
                 {
                     author: {
-                        name: ev.name
+                        name: api.dbchatFormatter.username(ev.name)
                     },
                     description: ev.message,
                     color: 0x0000ff
@@ -236,7 +284,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     event_1.events.playerJoin.on((ev) => {
         if (!status) return;
         const player = ev.player;
-        const username = player.getNameTag();
+        const username = api.dbchatFormatter.username(player.getNameTag());
         //変なログインを検知する。
         if (!(username === undefined || username === "undefined")) {
             let payload = {
@@ -260,7 +308,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     //LEFTイベント
     event_1.events.playerLeft.on((ev) => {
         if (!status) return;
-        const id = ev.player.getNameTag();
+        const id = api.dbchatFormatter.username(ev.player.getNameTag());
         let payload = {
             embeds: [
                 {
@@ -272,7 +320,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             ]
         }
         let cancel = { cancel: false }
-        api.playerJoin.emit(ev.player, payload, cancel)
+        api.playerLeft.emit(ev.player, payload, cancel)
         if (cancel.cancel) return
         client.getChannel(config.send_channelID).sendMessage(payload)
     });
@@ -339,11 +387,11 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         (param, origin, output) => {
             if (param.mode === "blacklist") {
                 for (const player of server_1.serverInstance.getPlayers()) {
-                    if (player.getNameTag() === param.username.getName()) {
-                        if (player.getNameTag() in blacklist) {
+                    if (api.dbchatFormatter.username(player.getNameTag()) === param.username.getName()) {
+                        if (api.dbchatFormatter.username(player.getNameTag()) in blacklist) {
                             output.error("It has already been registered.");
                         } else {
-                            blacklist[player.getNameTag()] = true;
+                            blacklist[api.dbchatFormatter.username(player.getNameTag())] = true;
                             fs.writeFileSync(`${filepath}/database/blacklist.json`, JSON.stringify(blacklist, null, 4));
                             output.success("success!");
                         }

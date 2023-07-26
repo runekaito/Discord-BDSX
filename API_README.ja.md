@@ -35,7 +35,7 @@ dApi.postMessageToMinecraft.on((payload,cancel) => {
 Minecraftから送られたメッセージを、Discordに送信する前に発火されるイベント。  
 引数として、  
 - packet: ```TextPacket```
-- payload: ```GatewayMessageCreateDispatchData```
+- payload: ```RESTPostAPIChannelMessageJSONBody```
 - sendChannelId: ```{id: string}```
 - cancel: ```{cancel: false}```
 
@@ -65,7 +65,7 @@ dApi.postMessageToDiscord.on((packet,payload,sendChannelId,cancel) => {
 Minecraftにプレイヤーが参加した時、メッセージ送信前に発火されるイベント。  
 引数として、  
 - player: ```Player```
-- payload: ```GatewayMessageCreateDispatchData```
+- payload: ```RESTPostAPIChannelMessageJSONBody```
 - cancel: ```{cancel: false}```
 
 が渡される。 
@@ -77,11 +77,41 @@ Minecraftにプレイヤーが参加した時、メッセージ送信前に発�
 Minecraftからプレイヤーが退出した時、メッセージ送信前に発火されるイベント。  
 引数として、  
 - player: ```Player```
-- payload: ```GatewayMessageCreateDispatchData```
+- payload: ```RESTPostAPIChannelMessageJSONBody```
 - cancel: ```{cancel: false}```
 
 が渡される。  
 > **Note**  
 > `playerJoin`と同様、payload.embeds[0].author.nameに、「～がサーバーからログアウトしました。」の文字列が格納されているため、書き換える場合はここを書き換えること。
 
+例を示した2つと使い方は同様のため、省略する。
+
+##### runDiscordCommand  
+Minecraftからプレイヤーが退出した時、メッセージ送信前に発火されるイベント。  
+引数として、  
+- commandType: ```"eval" | "list" | "userinfo" | "ping" | "info"```
+- payload: ```RESTPostAPIChannelMessageJSONBody```
+- cancel: ```{cancel: false}```
+
+が渡される。  
 例を示した2つと使い方は同様のため、省略する。  
+
+### オブジェクト  
+#### dbchatFormatter  
+###### username: ```Function``` 
+ユーザー名のフォーマットを変更するコールバック関数。
+playerJoin,PlayerLeft,postMessageToDiscord,runDiscordCommandのListコマンド実行時に呼び出される。
+デフォルトでは,
+```js
+const defaultFunction = (userName) => userName
+```
+となっている。
+```js
+const dApi = require("@bdsx/Discord-BDSX/api")
+dApi.dbchatFormatter.username = (userName) => {
+  return userName.split(" ")[0] /*文字列のreturnが必須。*/
+}
+```
+のように使う。
+- userName: ```string```  
+- @return: ```string```  

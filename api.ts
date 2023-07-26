@@ -24,19 +24,32 @@ export const postMessageToMinecraft = {
 }
 
 export const playerJoin = {
-    on: (callback: { (player: Player, payload: GatewayMessageCreateDispatchData, cancel: { cancel: boolean }): any }) => {
+    on: (callback: { (player: Player, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }): any }) => {
         dbchatApi.on("playerJoin", callback)
     },
-    emit: (player: Player, payload: GatewayMessageCreateDispatchData, cancel: { cancel: boolean }) => {
+    emit: (player: Player, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }) => {
         dbchatApi.emit("playerJoin", player, payload, cancel)
     }
 }
 
 export const playerLeft = {
-    on: (callback: { (player: Player, payload: GatewayMessageCreateDispatchData, cancel: { cancel: boolean }): any }) => {
+    on: (callback: { (player: Player, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }): any }) => {
         dbchatApi.on("playerLeft", callback)
     },
-    emit: (player: Player, payload: GatewayMessageCreateDispatchData, cancel: { cancel: boolean }) => {
-        dbchatApi.emit("playerLeft", player, payload)
+    emit: (player: Player, payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }) => {
+        dbchatApi.emit("playerLeft", player, payload, cancel)
     }
+}
+
+export const runDiscordCommand = {
+    on: (callback: { (commandType: "eval" | "list" | "userinfo" | "ping" | "info", payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }): any }) => {
+        dbchatApi.on("runDiscordCommand", callback)
+    },
+    emit: (commandType: "eval" | "list" | "userinfo" | "ping" | "info", payload: RESTPostAPIChannelMessageJSONBody, cancel: { cancel: boolean }) => {
+        dbchatApi.emit("runDiscordCommand", commandType, payload, cancel)
+    }
+}
+
+export const dbchatFormatter = {
+    username: (userName: string): string => userName
 }

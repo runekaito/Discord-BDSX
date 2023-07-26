@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.playerLeft = exports.playerJoin = exports.postMessageToMinecraft = exports.postMessageToDiscord = void 0;
+exports.dbchatFormatter = exports.runDiscordCommand = exports.playerLeft = exports.playerJoin = exports.postMessageToMinecraft = exports.postMessageToDiscord = void 0;
 const event = require("events");
 const dbchatApi = new event.EventEmitter;
 exports.postMessageToDiscord = {
@@ -32,6 +32,17 @@ exports.playerLeft = {
         dbchatApi.on("playerLeft", callback);
     },
     emit: (player, payload, cancel) => {
-        dbchatApi.emit("playerLeft", player, payload);
+        dbchatApi.emit("playerLeft", player, payload, cancel);
     }
+};
+exports.runDiscordCommand = {
+    on: (callback) => {
+        dbchatApi.on("runDiscordCommand", callback);
+    },
+    emit: (commandType, payload, cancel) => {
+        dbchatApi.emit("runDiscordCommand", commandType, payload, cancel);
+    }
+};
+exports.dbchatFormatter = {
+    username: (userName) => userName
 };
