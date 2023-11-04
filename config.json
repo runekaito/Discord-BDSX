@@ -10,5 +10,6 @@
         "roleId":"OP role id"
     },
     "lang":"ja",
-    "allowBackupLog":false
+    "allowBackupLog":false,
+    "deathLog":true
 }

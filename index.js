@@ -1,4 +1,5 @@
 //BDSXの起動を待つ
+const { TextPacket } = require("bdsx/bds/packets");
 const launcher_1 = require("bdsx/launcher");
 launcher_1.bedrockServer.afterOpen().then(() => {
     //BDSX系のimport
@@ -21,9 +22,13 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const resolved = path.resolve(__dirname, "./bin/node.exe");
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
-    let config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
+    /**
+     * @type {{token:string,send_channelID:string,discord_command:{bool:boolean,prefix:string},OP_command:{bool:boolean,roleId:string},lang:string,allowBackupLog:boolean,deathLog:boolean}}
+     */
+    let config = require("./config.jsons")
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
+    const mcLang = require("./modules/langParser")
 
     //Node.exeをダウンロードしBotを起動する
     let myChild;
@@ -65,6 +70,21 @@ launcher_1.bedrockServer.afterOpen().then(() => {
         country = config.lang;
     }
     let lang = JSON.parse(fs.readFileSync(`${filepath}/lang.json`))[country];
+    let languKeys = {}
+    switch (country) {
+        case "ja": {
+            languKeys = mcLang.parser(path.resolve(__dirname, "./mcLangs/ja_jp.lang"))
+            break;
+        }
+        case "en": {
+            languKeys = mcLang.parser(path.resolve(__dirname, "./mcLangs/en_us.lang"))
+            break;
+        }
+        default: {
+            languKeys = mcLang.parser(path.resolve(__dirname, "./mcLangs/ja_jp.lang"))
+            break;
+        }
+    }
     //reload function
     function reload() {
         config = JSON.parse(fs.readFileSync(`${filepath}/config.json`));
@@ -109,6 +129,43 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 "color": 0x0000ff
             }
         }]);
+    });
+    let notDoubleText = {
+        lastSendXuid: "000000000",
+        content: ""
+    }
+    event_1.events.packetSend(packetids_1.MinecraftPacketIds.Text).on((ev, ni) => {
+        if (!config.deathLog) return;
+        if (ev.type == TextPacket.Types.Translate) {
+            const message = ev.message
+            let key = ""
+            if (message in languKeys) {
+                key = message
+            } else {
+                key = message.match(/%.*/)[0].substring(1)
+            }
+            if (!key.startsWith("death.")) return;
+            console.log(ev)
+            const player = ni.getActor()
+            if (player == null) return;
+            const sendMessage = mcLang.formatter(languKeys, key, ev.params.toArray(),true)
+            if (player.getXuid() != notDoubleText.lastSendXuid && sendMessage == notDoubleText.content) return;
+            notDoubleText.lastSendXuid = player.getXuid()
+            notDoubleText.content = sendMessage
+            myChild.send(
+                [
+                    "message",
+                    {
+                        "embed": {
+                            "author": {
+                                "name": sendMessage
+                            },
+                            "description": null,
+                            "color": 0x000000
+                        }
+                    }]);
+        }
+
     });
     //JOINイベント
     event_1.events.playerJoin.on((ev) => {
@@ -157,7 +214,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     //kaito02020424/BDSX-Backup想定
     if (config.allowBackupLog) {
         const { backupApi } = require("@bdsx/BDSX-Backup/api");
-        backupApi.on("startBackup",() => {
+        backupApi.on("startBackup", () => {
             myChild.send(["message", {
                 "embed": {
                     "author": {
@@ -168,7 +225,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 }
             }]);
         });
-        backupApi.on("finishBackup",() => {
+        backupApi.on("finishBackup", () => {
             myChild.send(["message", {
                 "embed": {
                     "author": {
