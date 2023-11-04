@@ -22,10 +22,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
     const resolved = path.resolve(__dirname, "./bin/node.exe");
     let blacklist = JSON.parse(fs.readFileSync(`${filepath}/database/blacklist.json`));
     let userinfo = JSON.parse(fs.readFileSync(`${filepath}/database/userinfo.json`));
-    /**
-     * @type {{token:string,send_channelID:string,discord_command:{bool:boolean,prefix:string},OP_command:{bool:boolean,roleId:string},lang:string,allowBackupLog:boolean,deathLog:boolean}}
-     */
-    let config = require("./config.jsons")
+    let config = require("./config.json")
     const node_dl = require(`${filepath}/modules/node-dl.js`);
     const did = require(`${filepath}/modules/deviceID.js`);
     const mcLang = require("./modules/langParser")
