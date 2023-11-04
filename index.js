@@ -142,7 +142,6 @@ launcher_1.bedrockServer.afterOpen().then(() => {
                 key = message.match(/%.*/)[0].substring(1)
             }
             if (!key.startsWith("death.")) return;
-            console.log(ev)
             const player = ni.getActor()
             if (player == null) return;
             const sendMessage = mcLang.formatter(languKeys, key, ev.params.toArray(),true)

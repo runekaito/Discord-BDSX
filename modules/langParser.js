@@ -46,7 +46,6 @@ const formatter = (parsedObject, key, params, recursive = false) => {
         }
         c += 1
     }
-    console.log(tmpParam)
     return format(parsedObject[key], ...tmpParam)
 }
 exports.parser = parser
