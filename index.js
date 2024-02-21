@@ -144,7 +144,7 @@ launcher_1.bedrockServer.afterOpen().then(() => {
             if (!key.startsWith("death.")) return;
             const player = ni.getActor()
             if (player == null) return;
-            const sendMessage = mcLang.formatter(languKeys, key, ev.params.toArray(),true)
+            const sendMessage = mcLang.formatter(languKeys, key, ev.params.toArray(), true)
             if (player.getXuid() != notDoubleText.lastSendXuid && sendMessage == notDoubleText.content) return;
             notDoubleText.lastSendXuid = player.getXuid()
             notDoubleText.content = sendMessage
@@ -164,9 +164,10 @@ launcher_1.bedrockServer.afterOpen().then(() => {
 
     });
     //JOINイベント
-    event_1.events.playerJoin.on((ev) => {
-        if (!status) return;
-        const player = ev.player;
+    event_1.events.packetSend(packetids_1.MinecraftPacketIds.PlayStatus).on((pkt, ni) => {
+        if (pkt.status != 3) return;
+        const player = ni.getActor();
+        if (player == null) return;
         const username = player.getNameTag();
         //変なログインを検知する。
         if (!(username === undefined || username === "undefined")) {
